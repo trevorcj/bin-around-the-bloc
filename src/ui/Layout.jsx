@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 function Layout({ user }) {
   return (
     <>
-      <Sidebar />
+      <Sidebar user={user} />
 
       <div className="p-4 sm:ml-74">
         <div className="flex justify-end">

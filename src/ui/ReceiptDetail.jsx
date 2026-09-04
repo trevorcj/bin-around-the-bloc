@@ -1,4 +1,5 @@
 import {
+  Building2,
   CalendarDays,
   CircleCheckBig,
   CreditCard,
@@ -67,6 +68,7 @@ function ReceiptDetail({ receipt, onClose, variant = "sidebar" }) {
   const address = receipt.address || "N/A";
   const transactionReference =
     receipt.reference || receipt.receiptid || receipt.id || "N/A";
+  const estateName = receipt.estates?.name || receipt.estate_name || "";
   const statusMessage =
     receipt.statusMessage || receipt.status || "Unknown status";
   const collectionFee = normalizeCurrency(
@@ -125,6 +127,9 @@ function ReceiptDetail({ receipt, onClose, variant = "sidebar" }) {
           value={paymentDateTime}
         />
         <DetailRow icon={UserRound} label="Paid By" value={paidBy} />
+        {estateName && (
+          <DetailRow icon={Building2} label="Estate" value={estateName} />
+        )}
         <DetailRow icon={MapPin} label="Address" value={address} />
         <DetailRow
           icon={CreditCard}

@@ -1,4 +1,4 @@
-import { UserRound } from "lucide-react";
+import { Building2, ShieldCheck, Tag, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StyledH1 } from "../styles/CommonStyles";
 import InputUi from "../ui/Input";
@@ -7,6 +7,7 @@ import Button from "../ui/Button";
 import { useForm } from "react-hook-form";
 import showToast from "../utils/showToast";
 import updateUserProfile from "../api/updateUserProfile";
+import formatCurrency from "../utils/formatCurrency";
 
 function Settings() {
   const { user, setUser } = useAuth();
@@ -228,7 +229,7 @@ function Settings() {
                   Name
                 </p>
                 <p className="mt-1 text-sm font-medium text-brand-accent">
-                  {user?.fullname}
+                  {user?.fullname || "Resident"}
                 </p>
               </div>
 
@@ -246,7 +247,51 @@ function Settings() {
                   Address
                 </p>
                 <p className="mt-1 text-sm font-medium text-brand-accent">
-                  {user?.housenumber}, {user?.streetname}
+                  {[user?.housenumber ? `House ${user.housenumber}` : "", user?.apartment, user?.streetname]
+                    .filter(Boolean)
+                    .join(", ") || "N/A"}
+                </p>
+              </div>
+
+              <div className="border-t border-brand-accent/10 pt-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-accent/40">
+                  Estate
+                </p>
+                <p className="mt-1 text-sm font-medium text-brand-accent flex items-center gap-1.5">
+                  <Building2 size={14} className="text-brand-primary shrink-0" />
+                  <span>{user?.estate?.name || "Assigned Estate"}</span>
+                </p>
+                {user?.estate?.code && (
+                  <p className="mt-0.5 text-xs text-brand-accent/50 font-mono">
+                    Code: {user.estate.code}
+                  </p>
+                )}
+              </div>
+
+              <div className="border-t border-brand-accent/10 pt-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-accent/40">
+                  Property Tier & Monthly Rate
+                </p>
+                <p className="mt-1 text-sm font-medium text-brand-accent flex items-center gap-1.5">
+                  <Tag size={14} className="text-brand-accent/60 shrink-0" />
+                  <span>{user?.property_type_name || "Standard Property"}</span>
+                </p>
+                <p className="mt-0.5 text-xs font-semibold text-brand-primary">
+                  {formatCurrency(user?.property_fee ?? 5000, "NGN")} / month
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-sm border border-brand-accent/10 bg-white p-5">
+            <div className="flex items-start gap-3">
+              <ShieldCheck size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-semibold text-brand-accent">
+                  Estate Admin Managed
+                </h4>
+                <p className="mt-1 text-xs text-brand-accent/60 leading-relaxed">
+                  Your property category, monthly fee, and registered address are verified by your estate administrator. To change your property tier, please contact your estate office.
                 </p>
               </div>
             </div>

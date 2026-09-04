@@ -3,7 +3,7 @@ import supabase from "../services/supabase";
 async function fetchReceiptByField(field, value) {
   const { data, error } = await supabase
     .from("payments")
-    .select("*")
+    .select("*, estates(name, code)")
     .eq(field, value)
     .maybeSingle();
 

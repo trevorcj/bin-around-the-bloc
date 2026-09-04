@@ -1,11 +1,13 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Building2 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 import showToast from "../utils/showToast";
 import { useState } from "react";
 
-function Sidebar() {
+function Sidebar({ user: propUser }) {
   const [openSidebar, setOpenSidebar] = useState(false);
-  const { logoutUser } = useAuth();
+  const { logoutUser, user: authUser } = useAuth();
+  const user = propUser || authUser;
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -240,6 +242,22 @@ function Sidebar() {
             </div>
 
             <div className="mt-auto space-y-3 pb-2">
+              {(user?.estate?.name || user?.estate_id) && (
+                <div className="mx-1 rounded-sm border border-white/10 bg-white/5 p-3 text-xs text-white/80">
+                  <div className="flex items-center gap-1.5 font-medium text-white">
+                    <Building2 size={14} className="shrink-0 text-brand-secondary" />
+                    <span className="truncate">{user?.estate?.name || "Verified Estate"}</span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-white/50 truncate">
+                    {[user?.housenumber ? `House ${user.housenumber}` : "", user?.streetname]
+                      .filter(Boolean)
+                      .join(", ") || "Assigned Property"}
+                  </p>
+                  <div className="mt-2 inline-flex items-center rounded-xs bg-white/10 px-2 py-0.5 text-[10px] font-medium text-brand-secondary">
+                    {user?.property_type_name || "Residential"}
+                  </div>
+                </div>
+              )}
               <li>
                 <NavLink
                   to="/settings"
