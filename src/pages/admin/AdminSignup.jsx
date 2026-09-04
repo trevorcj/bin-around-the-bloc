@@ -2,7 +2,6 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { StyledDiv, HeroSection } from "../../styles/CommonStyles";
 import Button from "../../ui/Button";
 import InputUi from "../../ui/Input";
- import { ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import useAuth from "../../hooks/useAuth";
 import showToast from "../../utils/showToast";
@@ -37,7 +36,10 @@ function AdminSignup() {
       showToast("success", "Estate & Admin account successfully created!");
       navigate("/admin");
     } catch (err) {
-      showToast("error", err.message || "Failed to create estate admin account.");
+      showToast(
+        "error",
+        err.message || "Failed to create estate admin account.",
+      );
     }
   }
 
@@ -50,8 +52,9 @@ function AdminSignup() {
           </h1>
 
           <p className="text-white/80 text-lg leading-relaxed mb-12">
-            Configure property tiers, onboard residents with your unique estate code,
-            track waste collection fees, and reconcile bank and online payments effortlessly.
+            Configure property tiers, onboard residents with your unique estate
+            code, track waste collection fees, and reconcile bank and online
+            payments effortlessly.
           </p>
 
           <div className="flex items-center gap-4 mt-8 flex-wrap">
@@ -65,18 +68,13 @@ function AdminSignup() {
       <div className="bg-white text-brand-accent p-16 h-full overflow-y-auto">
         <img src="/logo.svg" className="h-8 mb-12" alt="batb logo" />
 
-        <div className="flex items-center gap-2 mb-2">
-          <ShieldCheck className="text-brand-primary size-5" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-brand-primary">
-            Estate Administrator Setup
-          </span>
-        </div>
-
         <h1 className="text-2xl font-semibold text-brand-accent mb-6">
           Register your Estate
         </h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="my-6 flex flex-col gap-2">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="my-6 flex flex-col gap-2">
           <div className="space-y-3 pb-3 border-b border-brand-accent/10">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-brand-accent/60">
               Administrator Profile
@@ -86,7 +84,9 @@ function AdminSignup() {
               label="Full name"
               type="text"
               required
-              {...register("fullname", { required: "Your full name is required" })}
+              {...register("fullname", {
+                required: "Your full name is required",
+              })}
             />
             {errors.fullname && (
               <p className={inputErrorClasses}>{errors.fullname.message}</p>
@@ -138,7 +138,9 @@ function AdminSignup() {
               label="Estate name (e.g. Lekki Gardens Estate)"
               type="text"
               required
-              {...register("estateName", { required: "Estate name is required" })}
+              {...register("estateName", {
+                required: "Estate name is required",
+              })}
             />
             {errors.estateName && (
               <p className={inputErrorClasses}>{errors.estateName.message}</p>

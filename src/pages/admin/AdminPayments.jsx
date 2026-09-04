@@ -137,7 +137,6 @@ function AdminPayments() {
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center gap-3 bg-white p-4 border border-brand-accent/10 rounded-sm">
         <div className="relative flex-1">
           <Search
@@ -156,7 +155,7 @@ function AdminPayments() {
           />
         </div>
 
-        <div className="w-full lg:w-44">
+        <div className="w-full lg:w-44 min-w-0">
           <DropdownUi
             options={STATUS_OPTIONS}
             value={status}
@@ -168,7 +167,7 @@ function AdminPayments() {
           />
         </div>
 
-        <div className="w-full lg:w-44">
+        <div className="w-full lg:w-44 min-w-0">
           <DropdownUi
             options={MONTH_OPTIONS}
             value={month}
@@ -188,7 +187,6 @@ function AdminPayments() {
         </button>
       </div>
 
-      {/* Payments Table */}
       <Table
         data={payments}
         columns={PAYMENT_COLUMNS}

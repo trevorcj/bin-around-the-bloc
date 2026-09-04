@@ -46,7 +46,6 @@ function RecordPaymentModal({ isOpen, onClose, estateId }) {
     new Date().toISOString().split("T")[0]
   );
 
-  // Fetch residents for dropdown selection
   const { data: residentsData } = useQuery({
     queryKey: ["allEstateResidents", estateId],
     queryFn: () => getEstateResidents(estateId, { limit: 100 }),
@@ -66,12 +65,10 @@ function RecordPaymentModal({ isOpen, onClose, estateId }) {
   const mutation = useMutation({
     mutationFn: recordManualPayment,
     onSuccess: () => {
-      showToast("success", "Payment recorded successfully.");
-      queryClient.invalidateQueries(["adminPayments"]);
-      queryClient.invalidateQueries(["adminOverview"]);
-      queryClient.invalidateQueries(["adminResidents"]);
+      queryClient.invalidateQueries({ queryKey: ["adminPayments"] });
+      queryClient.invalidateQueries({ queryKey: ["adminOverview"] });
+      queryClient.invalidateQueries({ queryKey: ["adminResidents"] });
       onClose();
-      // Reset form
       setAmount("");
       setReference("");
       setSelectedResidentId("");
@@ -124,7 +121,6 @@ function RecordPaymentModal({ isOpen, onClose, estateId }) {
             value={selectedResidentId}
             onChange={(val) => {
               setSelectedResidentId(val);
-              // Prefill outstanding balance if any
               const res = residents.find((r) => r.id === val);
               if (res && res.totalOutstanding > 0 && !amount) {
                 setAmount(String(res.totalOutstanding));

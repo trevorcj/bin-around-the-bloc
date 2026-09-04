@@ -37,25 +37,21 @@ function AdminSettings() {
 
   const [copied, setCopied] = useState(false);
 
-  // Street modals & state
   const [isAddStreetOpen, setIsAddStreetOpen] = useState(false);
   const [newStreetName, setNewStreetName] = useState("");
   const [editingStreet, setEditingStreet] = useState(null);
 
-  // Property Type modals & state
   const [isAddPropertyTypeOpen, setIsAddPropertyTypeOpen] = useState(false);
   const [newPropertyName, setNewPropertyName] = useState("");
   const [newPropertyFee, setNewPropertyFee] = useState("");
   const [editingPropertyType, setEditingPropertyType] = useState(null);
 
-  // Estate details edit state
   const [isEditingEstate, setIsEditingEstate] = useState(false);
   const [estateName, setEstateName] = useState("");
   const [estateLocation, setEstateLocation] = useState("");
   const [estateDescription, setEstateDescription] = useState("");
   const [estatePhone, setEstatePhone] = useState("");
 
-  // Fetch estate settings
   const { data: estate } = useQuery({
     queryKey: ["estateSettings", estateId],
     queryFn: async () => {
@@ -71,27 +67,24 @@ function AdminSettings() {
     enabled: !!estateId,
   });
 
-  // Fetch streets
   const { data: streets = [] } = useQuery({
     queryKey: ["estateStreets", estateId],
     queryFn: () => getEstateStreets(estateId, true),
     enabled: !!estateId,
   });
 
-  // Fetch property types
   const { data: propertyTypes = [] } = useQuery({
     queryKey: ["estatePropertyTypes", estateId],
     queryFn: () => getEstatePropertyTypes(estateId, true),
     enabled: !!estateId,
   });
 
-  // --- Mutations ---
   const updateEstateMutation = useMutation({
     mutationFn: (payload) => updateEstateSettings(estateId, payload),
     onSuccess: () => {
       showToast("success", "Estate details updated.");
       setIsEditingEstate(false);
-      queryClient.invalidateQueries(["estateSettings", estateId]);
+      queryClient.invalidateQueries({ queryKey: ["estateSettings", estateId] });
     },
     onError: (err) => showToast("error", err.message),
   });
@@ -102,7 +95,8 @@ function AdminSettings() {
       showToast("success", "Street added successfully.");
       setNewStreetName("");
       setIsAddStreetOpen(false);
-      queryClient.invalidateQueries(["estateStreets", estateId]);
+      queryClient.invalidateQueries({ queryKey: ["estateStreets"] });
+      queryClient.invalidateQueries({ queryKey: ["adminResidents"] });
     },
     onError: (err) => showToast("error", err.message),
   });
@@ -112,7 +106,8 @@ function AdminSettings() {
     onSuccess: () => {
       showToast("success", "Street updated.");
       setEditingStreet(null);
-      queryClient.invalidateQueries(["estateStreets", estateId]);
+      queryClient.invalidateQueries({ queryKey: ["estateStreets"] });
+      queryClient.invalidateQueries({ queryKey: ["adminResidents"] });
     },
     onError: (err) => showToast("error", err.message),
   });
@@ -124,7 +119,8 @@ function AdminSettings() {
       setNewPropertyName("");
       setNewPropertyFee("");
       setIsAddPropertyTypeOpen(false);
-      queryClient.invalidateQueries(["estatePropertyTypes", estateId]);
+      queryClient.invalidateQueries({ queryKey: ["estatePropertyTypes"] });
+      queryClient.invalidateQueries({ queryKey: ["adminResidents"] });
     },
     onError: (err) => showToast("error", err.message),
   });
@@ -134,7 +130,8 @@ function AdminSettings() {
     onSuccess: () => {
       showToast("success", "Property category updated.");
       setEditingPropertyType(null);
-      queryClient.invalidateQueries(["estatePropertyTypes", estateId]);
+      queryClient.invalidateQueries({ queryKey: ["estatePropertyTypes"] });
+      queryClient.invalidateQueries({ queryKey: ["adminResidents"] });
     },
     onError: (err) => showToast("error", err.message),
   });

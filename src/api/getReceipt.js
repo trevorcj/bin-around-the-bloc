@@ -25,8 +25,8 @@ export default async function getReceipt(receiptId) {
     if (byReceiptId) {
       return byReceiptId;
     }
-  } catch {
-    // Try the record ID next.
+  } catch (err) {
+    void err;
   }
 
   try {

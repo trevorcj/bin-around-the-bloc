@@ -36,9 +36,9 @@ function AdminResidentDetailModal({ isOpen, onClose, residentId }) {
     onSuccess: () => {
       showToast("success", "Opening balance updated successfully.");
       setIsEditingBal(false);
-      queryClient.invalidateQueries(["residentDetails", residentId]);
-      queryClient.invalidateQueries(["adminResidents"]);
-      queryClient.invalidateQueries(["adminOverview"]);
+      queryClient.invalidateQueries({ queryKey: ["residentDetails", residentId] });
+      queryClient.invalidateQueries({ queryKey: ["adminResidents"] });
+      queryClient.invalidateQueries({ queryKey: ["adminOverview"] });
     },
     onError: (err) => {
       showToast("error", err.message || "Failed to update opening balance.");

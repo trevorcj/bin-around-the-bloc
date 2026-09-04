@@ -14,8 +14,6 @@ import Support from "./pages/Support.jsx";
 import Payment from "./pages/Payment.jsx";
 import History from "./pages/History.jsx";
 import Settings from "./pages/Settings.jsx";
-
-// Admin components & pages
 import AdminSignup from "./pages/admin/AdminSignup.jsx";
 import AdminLayout from "./ui/admin/AdminLayout.jsx";
 import AdminOverview from "./pages/admin/AdminOverview.jsx";
@@ -44,12 +42,10 @@ function App() {
       <ReactQueryDevtools initialIsOpen={false} />
 
       <Routes>
-        {/* Public Authentication Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin/signup" element={<AdminSignup />} />
 
-        {/* Resident Protected Routes */}
         <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="resident" />}>
           <Route path="/" element={<Layout user={user} />}>
             <Route index element={<Dashboard user={user} />} />
@@ -62,7 +58,6 @@ function App() {
           </Route>
         </Route>
 
-        {/* Admin Protected Routes */}
         <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="admin" />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminOverview />} />

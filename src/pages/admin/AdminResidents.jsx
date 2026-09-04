@@ -39,20 +39,18 @@ function AdminResidents() {
 
   const debouncedSearch = useDebounce(search, 400);
 
-  // Fetch streets and property types for filter dropdowns
   const { data: streets = [] } = useQuery({
-    queryKey: ["estateStreets", estateId],
-    queryFn: () => getEstateStreets(estateId, true),
+    queryKey: ["estateStreets", estateId, "active"],
+    queryFn: () => getEstateStreets(estateId, false),
     enabled: !!estateId,
   });
 
   const { data: propertyTypes = [] } = useQuery({
-    queryKey: ["estatePropertyTypes", estateId],
-    queryFn: () => getEstatePropertyTypes(estateId, true),
+    queryKey: ["estatePropertyTypes", estateId, "active"],
+    queryFn: () => getEstatePropertyTypes(estateId, false),
     enabled: !!estateId,
   });
 
-  // Fetch residents list
   const { data, isLoading, error } = useQuery({
     queryKey: [
       "adminResidents",
@@ -125,7 +123,6 @@ function AdminResidents() {
         </p>
       </div>
 
-      {/* Filter and Search Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center gap-3 bg-white p-4 border border-brand-accent/10 rounded-sm">
         <div className="relative flex-1">
           <Search
@@ -144,7 +141,7 @@ function AdminResidents() {
           />
         </div>
 
-        <div className="w-full lg:w-48">
+        <div className="w-full lg:w-48 min-w-0">
           <DropdownUi
             options={streetOptions}
             value={selectedStreetId}
@@ -156,7 +153,7 @@ function AdminResidents() {
           />
         </div>
 
-        <div className="w-full lg:w-48">
+        <div className="w-full lg:w-48 min-w-0">
           <DropdownUi
             options={propertyTypeOptions}
             value={selectedPropertyTypeId}
@@ -176,7 +173,6 @@ function AdminResidents() {
         </button>
       </div>
 
-      {/* Residents Table */}
       <Table
         data={residents}
         columns={RESIDENT_COLUMNS}

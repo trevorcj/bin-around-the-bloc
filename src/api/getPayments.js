@@ -8,7 +8,8 @@ export default async function getPayments({
   month = "all",
   page = 1,
 }) {
-  const userEmail = sessionStorage.getItem("userEmail");
+  const userEmail =
+    localStorage.getItem("userEmail") || sessionStorage.getItem("userEmail");
 
   if (!userEmail) {
     return {

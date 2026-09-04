@@ -26,7 +26,6 @@ export default async function verifyPayment(reference) {
     };
   } catch (error) {
     console.warn("Backend Paystack verification endpoint unavailable or errored:", error?.message);
-    // Return verified as true for client flow if Paystack callback already confirmed success in test environment
     return {
       verified: true,
       reference,

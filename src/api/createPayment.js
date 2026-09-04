@@ -3,7 +3,6 @@ import supabase from "../services/supabase";
 export default async function createPayment(payment) {
   console.log("Creating payment in Supabase:", payment);
 
-  // Check if payment already exists (deduplication)
   if (payment.receiptid) {
     const { data: existing } = await supabase
       .from("payments")
@@ -17,7 +16,6 @@ export default async function createPayment(payment) {
     }
   }
 
-  // Look up user profile to populate estate_id and resident_id if not present
   let estateId = payment.estate_id;
   let residentId = payment.resident_id;
 
@@ -64,7 +62,6 @@ export default async function createPayment(payment) {
     throw new Error(`Payment persistence error: ${error.message}`);
   }
 
-  // If status is Successful, mark the corresponding bill as Paid
   if (data.status === "Successful") {
     try {
       if (data.bill_id) {
@@ -73,7 +70,6 @@ export default async function createPayment(payment) {
           .update({ status: "Paid", paid_at: new Date().toISOString() })
           .eq("id", data.bill_id);
       } else if (residentId) {
-        // Mark any unpaid bill for this resident and month/year as paid
         await supabase
           .from("bills")
           .update({ status: "Paid", paid_at: new Date().toISOString() })

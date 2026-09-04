@@ -1,6 +1,5 @@
 import supabase from "../services/supabase";
 
-// 1. Estate Code Validation for Resident Registration
 export async function validateEstateCode(code) {
   if (!code || !code.trim()) {
     return { valid: false, message: "Please enter an estate code." };
@@ -21,7 +20,6 @@ export async function validateEstateCode(code) {
     };
   }
 
-  // Fetch active streets and active property types for this estate
   const [streetsRes, propertyTypesRes] = await Promise.all([
     supabase
       .from("streets")
@@ -45,33 +43,28 @@ export async function validateEstateCode(code) {
   };
 }
 
-// 2. Estate Overview Metrics
 export async function getEstateOverview(estateId) {
   if (!estateId) return null;
 
   const [residentsRes, paymentsRes, billsRes, recentPaymentsRes] = await Promise.all([
-    // Total residents
     supabase
       .from("profiles")
       .select("id, opening_balance", { count: "exact" })
       .eq("estate_id", estateId)
       .eq("role", "resident"),
 
-    // Total payments & collected sum
     supabase
       .from("payments")
       .select("amount, status", { count: "exact" })
       .eq("estate_id", estateId)
       .eq("status", "Successful"),
 
-    // Unpaid bills for outstanding calculation
     supabase
       .from("bills")
       .select("amount, status")
       .eq("estate_id", estateId)
       .eq("status", "Unpaid"),
 
-    // Recent 5 payments
     supabase
       .from("payments")
       .select("*")
@@ -111,7 +104,6 @@ export async function getEstateOverview(estateId) {
   };
 }
 
-// 3. Estate Residents List with Search & Filters
 export async function getEstateResidents(estateId, {
   search = "",
   streetId = "all",
@@ -168,7 +160,6 @@ export async function getEstateResidents(estateId, {
     throw new Error(error.message);
   }
 
-  // For each resident, calculate their current fee and outstanding bills
   const residentIds = (residents || []).map((r) => r.id);
   let unpaidBillsByResident = {};
 
@@ -207,7 +198,6 @@ export async function getEstateResidents(estateId, {
   };
 }
 
-// 4. Resident Detail View (Profile, Bills, and Payments)
 export async function getResidentDetails(residentId) {
   if (!residentId) return null;
 
@@ -240,7 +230,6 @@ export async function getResidentDetails(residentId) {
   };
 }
 
-// 5. Update Resident Opening Balance
 export async function updateResidentOpeningBalance(residentId, balance) {
   if (!residentId) throw new Error("Missing resident ID.");
 
@@ -259,7 +248,6 @@ export async function updateResidentOpeningBalance(residentId, balance) {
   return data;
 }
 
-// 6. Estate Payments Central Ledger
 export async function getEstatePayments(estateId, {
   search = "",
   status = "all",
@@ -312,7 +300,6 @@ export async function getEstatePayments(estateId, {
   };
 }
 
-// 7. Record Manual Payment
 export async function recordManualPayment({
   estateId,
   residentId,
@@ -327,7 +314,6 @@ export async function recordManualPayment({
     throw new Error("Missing required payment fields.");
   }
 
-  // Get resident details
   const { data: resident, error: resError } = await supabase
     .from("profiles")
     .select("*")
@@ -340,7 +326,6 @@ export async function recordManualPayment({
 
   const receiptid = `MAN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
-  // Find any unpaid bill for this resident and month/year
   let billId = null;
   const { data: matchingBill } = await supabase
     .from("bills")
@@ -384,7 +369,6 @@ export async function recordManualPayment({
     throw new Error(insertError.message);
   }
 
-  // Mark bill as Paid if one was found or create a paid bill record for reconciliation
   if (billId) {
     await supabase
       .from("bills")
@@ -412,7 +396,6 @@ export async function recordManualPayment({
   return createdPayment;
 }
 
-// 8. Estate Streets Configuration
 export async function getEstateStreets(estateId, includeArchived = true) {
   if (!estateId) return [];
 
@@ -458,7 +441,6 @@ export async function updateStreet(streetId, updates) {
   return data;
 }
 
-// 9. Estate Property Types & Snapshot-Safe Fee Configuration
 export async function getEstatePropertyTypes(estateId, includeArchived = true) {
   if (!estateId) return [];
 
@@ -513,7 +495,6 @@ export async function updatePropertyType(propertyTypeId, updates) {
   return data;
 }
 
-// 10. Estate Settings
 export async function getEstateSettings(estateId) {
   if (!estateId) return null;
 

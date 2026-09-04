@@ -16,44 +16,132 @@ function generateEstateCode(estateName = "EST") {
   return `${prefix}-${randomPart}`;
 }
 
+function saveSession(token, email, user) {
+  if (token) {
+    try {
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
+    } catch (e) {
+      void e;
+    }
+  }
+  if (email) {
+    try {
+      localStorage.setItem("userEmail", email);
+      sessionStorage.setItem("userEmail", email);
+    } catch (e) {
+      void e;
+    }
+  }
+  if (user) {
+    try {
+      const userStr = JSON.stringify(user);
+      localStorage.setItem("user", userStr);
+      sessionStorage.setItem("user", userStr);
+    } catch (e) {
+      void e;
+    }
+  }
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("userEmail");
+    sessionStorage.removeItem("user");
+  } catch (e) {
+    void e;
+  }
+}
+
+function getStoredToken() {
+  try {
+    return localStorage.getItem("token") || sessionStorage.getItem("token");
+  } catch (e) {
+    void e;
+    return null;
+  }
+}
+
+function getStoredUser() {
+  try {
+    const str = localStorage.getItem("user") || sessionStorage.getItem("user");
+    return str ? JSON.parse(str) : null;
+  } catch (e) {
+    void e;
+    return null;
+  }
+}
+
 export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!sessionStorage.getItem("token")
-  );
-  const [user, setUser] = useState(() => {
-    const storedUser = sessionStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(!!getStoredToken());
+  const [user, setUser] = useState(() => getStoredUser());
 
-  // Sync with Supabase on mount
   useEffect(() => {
+    async function syncSession(session) {
+      if (!session?.user) {
+        clearSession();
+        setUser(null);
+        setIsAuthenticated(false);
+        setUserLoading(false);
+        return;
+      }
+
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*, estates(id, name, code, description, location)")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        if (profile) {
+          const enrichedUser = {
+            ...profile,
+            estate: profile.estates,
+          };
+          setUser(enrichedUser);
+          setIsAuthenticated(true);
+          saveSession(session.access_token, profile.email, enrichedUser);
+        } else {
+          const fallbackUser = {
+            id: session.user.id,
+            email: session.user.email,
+            fullname: session.user.user_metadata?.fullname || session.user.email?.split("@")[0],
+            role: session.user.user_metadata?.role || "resident",
+            estate_id: session.user.user_metadata?.estate_id || null,
+          };
+          setUser(fallbackUser);
+          setIsAuthenticated(true);
+          saveSession(session.access_token, fallbackUser.email, fallbackUser);
+        }
+      } catch (err) {
+        console.warn("Auth profile sync error:", err);
+      } finally {
+        setUserLoading(false);
+      }
+    }
+
     async function initAuth() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("*, estates(id, name, code, description, location)")
-            .eq("id", session.user.id)
-            .maybeSingle();
-
-          if (profile) {
-            const enrichedUser = {
-              ...profile,
-              estate: profile.estates,
-            };
-            setUser(enrichedUser);
-            setIsAuthenticated(true);
-            sessionStorage.setItem("token", session.access_token);
-            sessionStorage.setItem("userEmail", profile.email);
-            sessionStorage.setItem("user", JSON.stringify(enrichedUser));
+        if (session) {
+          await syncSession(session);
+        } else {
+          const storedToken = getStoredToken();
+          if (!storedToken) {
+            clearSession();
+            setUser(null);
+            setIsAuthenticated(false);
           }
+          setUserLoading(false);
         }
       } catch (err) {
         console.warn("Auth initialization error:", err);
-      } finally {
         setUserLoading(false);
       }
     }
@@ -63,11 +151,12 @@ export function AuthProvider({ children }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT" || !session) {
-          sessionStorage.removeItem("token");
-          sessionStorage.removeItem("userEmail");
-          sessionStorage.removeItem("user");
+          clearSession();
           setUser(null);
           setIsAuthenticated(false);
+          setUserLoading(false);
+        } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          await syncSession(session);
         }
       }
     );
@@ -77,7 +166,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // LOGIN
   async function loginUser(email, password) {
     try {
       setLoading(true);
@@ -95,7 +183,6 @@ export function AuthProvider({ children }) {
       const authUser = authData.user;
       const token = authData.session?.access_token;
 
-      // Fetch user profile with estate
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("*, estates(id, name, code, description, location)")
@@ -106,7 +193,6 @@ export function AuthProvider({ children }) {
         throw new Error("Unable to fetch user profile.");
       }
 
-      // If profile doesn't exist yet, create a fallback profile from auth metadata
       let currentUser = profile;
       if (!currentUser) {
         const fallbackData = {
@@ -125,15 +211,10 @@ export function AuthProvider({ children }) {
 
       const enrichedUser = {
         ...currentUser,
-        estate: currentUser.estates,
+        estate: currentUser?.estates,
       };
 
-      // Save to sessionStorage
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("userEmail", email);
-      sessionStorage.setItem("user", JSON.stringify(enrichedUser));
-
-      // Update state
+      saveSession(token, email, enrichedUser);
       setUser(enrichedUser);
       setIsAuthenticated(true);
 
@@ -145,14 +226,12 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // SIGNUP / REGISTER (Resident)
   async function registerUser(userInfo) {
     try {
       setLoading(true);
 
       const cleanEmail = userInfo.email.trim().toLowerCase();
 
-      // Create Supabase Auth account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
         password: userInfo.password,
@@ -171,7 +250,6 @@ export function AuthProvider({ children }) {
       const authUser = authData.user;
       const token = authData.session?.access_token || "auth-session-token";
 
-      // Create resident profile record
       const profileData = {
         id: authUser.id,
         estate_id: userInfo.estate_id || null,
@@ -196,11 +274,9 @@ export function AuthProvider({ children }) {
         .single();
 
       if (profileError) {
-        console.error("Profile creation error:", profileError);
         throw new Error(profileError.message);
       }
 
-      // Generate initial current month bill snapshot if property type fee exists
       if (userInfo.estate_id && userInfo.property_fee) {
         try {
           const monthName = new Date().toLocaleString("en-US", { month: "long" }).toLowerCase();
@@ -228,12 +304,7 @@ export function AuthProvider({ children }) {
         estate: createdProfile?.estates,
       };
 
-      // Save to sessionStorage
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("userEmail", cleanEmail);
-      sessionStorage.setItem("user", JSON.stringify(enrichedUser));
-
-      // Update state
+      saveSession(token, cleanEmail, enrichedUser);
       setUser(enrichedUser);
       setIsAuthenticated(true);
 
@@ -245,14 +316,12 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // REGISTER ESTATE ADMINISTRATOR
   async function registerAdmin(adminInfo) {
     try {
       setLoading(true);
 
       const cleanEmail = adminInfo.email.trim().toLowerCase();
 
-      // 1. Create Supabase Auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
         password: adminInfo.password,
@@ -271,7 +340,6 @@ export function AuthProvider({ children }) {
       const authUser = authData.user;
       const token = authData.session?.access_token || "auth-session-token";
 
-      // 2. Generate unique Estate Code and insert Estate
       let estateCode = generateEstateCode(adminInfo.estateName);
 
       const { data: createdEstate, error: estateError } = await supabase
@@ -293,7 +361,6 @@ export function AuthProvider({ children }) {
         throw new Error(estateError.message);
       }
 
-      // 3. Seed default common property categories for this estate
       try {
         await supabase.from("property_types").insert([
           { estate_id: createdEstate.id, name: "House", fee: 5000 },
@@ -305,7 +372,6 @@ export function AuthProvider({ children }) {
         console.warn("Could not seed default property types:", seedErr);
       }
 
-      // 4. Create admin profile record
       const profileData = {
         id: authUser.id,
         estate_id: createdEstate.id,
@@ -331,12 +397,7 @@ export function AuthProvider({ children }) {
         estate: createdEstate,
       };
 
-      // Save to sessionStorage
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("userEmail", cleanEmail);
-      sessionStorage.setItem("user", JSON.stringify(enrichedUser));
-
-      // Update state
+      saveSession(token, cleanEmail, enrichedUser);
       setUser(enrichedUser);
       setIsAuthenticated(true);
 
@@ -348,16 +409,13 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // LOGOUT
   async function logoutUser() {
     try {
       await supabase.auth.signOut();
     } catch (err) {
       console.warn("Supabase signout notice:", err);
     }
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("userEmail");
-    sessionStorage.removeItem("user");
+    clearSession();
     setUser(null);
     setIsAuthenticated(false);
   }

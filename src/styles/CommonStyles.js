@@ -1,7 +1,5 @@
 import styled from "styled-components";
 
-// Login & Signup
-
 export const StyledDiv = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -34,7 +32,6 @@ export const HeroSection = styled.div`
     background-image: url("/login-img.jpg");
     background-size: cover;
     background-position: center;
-    /* filter: grayscale(100%); */
     z-index: 0;
   }
 `;
@@ -46,5 +43,3 @@ export const StyledH1 = styled.h1`
   font-weight: 600;
   letter-spacing: -0.01em;
 `;
-
-//

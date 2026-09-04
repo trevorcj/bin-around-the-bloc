@@ -95,13 +95,11 @@ function Payment() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Dynamically load resident's property fee and bill for the selected month/year
   useEffect(() => {
     async function loadFeeAndBill() {
       if (!user?.id) return;
 
       try {
-        // 1. Check if an unpaid bill exists for this resident and period
         const { data: bill } = await supabase
           .from("bills")
           .select("id, amount, status")
@@ -118,7 +116,6 @@ function Payment() {
 
         setCurrentBillId(null);
 
-        // 2. If no existing bill, load resident's configured property type fee
         if (user?.property_type_id) {
           const { data: pt } = await supabase
             .from("property_types")
@@ -158,20 +155,20 @@ function Payment() {
 
     const refString = reference?.reference || reference?.trxref || `RCT-${Date.now()}`;
 
-    // Backend verification
-    let verifiedChannel = reference?.channel || "Paystack";
-
+    let verificationResult;
     try {
-      const verification = await verifyPayment(refString);
-      if (!verification.verified) {
-        showToast("error", "Transaction could not be verified by Paystack.");
-        setIsSubmitting(false);
-        return;
-      }
-      if (verification.channel) verifiedChannel = verification.channel;
+      verificationResult = await verifyPayment(refString);
     } catch (verErr) {
       console.warn("Backend verification notice:", verErr);
     }
+
+    if (!verificationResult?.verified) {
+      showToast("error", "Transaction could not be verified by Paystack.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const verifiedChannel = verificationResult?.channel || reference?.channel || "card";
 
     const paystackAmount = reference?.amount
       ? Number(reference.amount) / 100
@@ -182,7 +179,10 @@ function Payment() {
       estate_id: user?.estate_id || null,
       resident_id: user?.id || null,
       bill_id: currentBillId || null,
-      email: user?.email || sessionStorage.getItem("userEmail"),
+      email:
+        user?.email ||
+        localStorage.getItem("userEmail") ||
+        sessionStorage.getItem("userEmail"),
       fullname: fullName.trim(),
       address: address.trim(),
       amount: baseAmount,
@@ -364,6 +364,7 @@ function Payment() {
                       reference: receiptId,
                       email:
                         user?.email ||
+                        localStorage.getItem("userEmail") ||
                         sessionStorage.getItem("userEmail") ||
                         "no-reply@example.com",
                       amount: amountKobo,

@@ -12,7 +12,10 @@ function Settings() {
   const { user, setUser } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [originalEmail, setOriginalEmail] = useState(
-    user?.email || sessionStorage.getItem("userEmail") || "",
+    user?.email ||
+      localStorage.getItem("userEmail") ||
+      sessionStorage.getItem("userEmail") ||
+      "",
   );
   const phoneValidation = {
     required: "Phone number is required.",
@@ -85,6 +88,8 @@ function Settings() {
       const nextUser = { ...user, ...payload };
 
       setUser(nextUser);
+      localStorage.setItem("user", JSON.stringify(nextUser));
+      localStorage.setItem("userEmail", nextUser.email);
       sessionStorage.setItem("user", JSON.stringify(nextUser));
       sessionStorage.setItem("userEmail", nextUser.email);
       setOriginalEmail(nextUser.email);

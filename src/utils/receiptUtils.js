@@ -3,8 +3,6 @@ import html2canvas from "html2canvas";
 import formatCurrency from "./formatCurrency";
 import formatDate from "./formatDate";
 
-// --- Helper Functions ---
-
 function formatReceiptField(value, fallback = "N/A") {
   if (value === undefined || value === null || value === "") return fallback;
   return String(value);
@@ -89,8 +87,6 @@ function getStatusIcon(statusLabel) {
     </svg>
   `;
 }
-
-// --- Styles (Clean, Real-World Fintech Style with Centered Status Icon & Label) ---
 
 function getReceiptStyles() {
   return `
@@ -247,8 +243,6 @@ function getReceiptStyles() {
   `;
 }
 
-// --- Markup Builder ---
-
 function buildReceiptMarkup(receipt) {
   const statusLabel = getReceiptStatusLabel(receipt.status);
   const statusClass = getReceiptStatusClass(receipt.status);
@@ -334,8 +328,6 @@ function buildReceiptMarkup(receipt) {
     </div>
   `;
 }
-
-// --- Export Functions ---
 
 function buildReceiptHtml(receipt) {
   const receiptIdentifier = formatReceiptField(receipt.receiptid || receipt.id);
@@ -471,8 +463,8 @@ export async function shareReceiptLink(receiptId) {
         url: shareUrl,
       });
       return { status: "shared", shareUrl };
-    } catch {
-      // fallback to clipboard
+    } catch (e) {
+      void e;
     }
   }
 
