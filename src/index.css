@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "GD Boing";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/src/assets/fonts/GD-Boing-Bold.ttf") format("truetype");
+}
+
+/* @font-face {
+  font-family: "Graphik";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/src/assets/fonts/Graphik-Medium.ttf") format("truetype");
+} */
+/* 
+@font-face {
+  font-family: "Graphik";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/src/assets/fonts/Graphik-Regular.ttf") format("truetype");
+} */
+
+@theme {
+  /* Colors */
+  --color-brand-primary: #448e5c;
+  --color-brand-secondary: #e17b3e;
+  --color-brand-accent: #0a2525;
+  --color-status-success: #5ab776;
+  --color-status-warning: #efae45;
+  --color-status-error: #bd3128;
+
+  /* Typography */
+  --font-headlines: "GD Boing", sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+}
+
+@layer components {
+  .inline-link {
+    font-weight: 500;
+    color: var(--color-brand-primary);
+    position: relative;
+
+    &::after {
+      content: " ";
+      height: 4px;
+      background-color: var(--color-brand-primary);
+      width: 100%;
+      opacity: 0.1;
+      position: absolute;
+      left: 0;
+      bottom: 2px;
+    }
+  }
+
+  .inline-link:hover::after {
+    opacity: 0;
+  }
+}
