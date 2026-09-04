@@ -9,24 +9,29 @@ import showToast from "../utils/showToast";
 
 function Login() {
   const { register, handleSubmit } = useForm();
-  const { loginUser, loading } = useAuth();
+  const { loginUser, loading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
-  const { isAuthenticated } = useAuth();
-
-  if (isAuthenticated) {
+  if (isAuthenticated && user) {
+    if (user.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
     return <Navigate to="/" replace />;
   }
 
   async function onSubmit({ email, password }) {
     try {
-      await loginUser(email, password);
-
-      navigate("/");
+      const loggedInUser = await loginUser(email, password);
 
       showToast("success", "Successfully logged in");
+
+      if (loggedInUser?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
-      showToast("error", err.message);
+      showToast("error", err.message || "Failed to sign in. Check your credentials.");
     }
   }
 
@@ -61,29 +66,41 @@ function Login() {
           <InputUi
             label="Email address"
             type="email"
+            required
             className="mt-2"
-            {...register("email")}
+            {...register("email", { required: true })}
           />
           <InputUi
             label="Password"
             type="password"
+            required
             className="mt-2"
-            {...register("password")}
+            {...register("password", { required: true })}
           />
           <Button type="submit" disabled={loading} className="mt-4">
-            {loading ? "Signing in" : "Sign in"}
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
 
-        <p>
-          Don't have account?{" "}
-          <Link to="/signup" className="inline-link">
-            Create an account
-          </Link>
-        </p>
+        <div className="space-y-3">
+          <p>
+            Don't have an account?{" "}
+            <Link to="/signup" className="inline-link">
+              Create an account
+            </Link>
+          </p>
+
+          <p className="text-sm text-brand-accent/65">
+            Are you an estate administrator?{" "}
+            <Link to="/admin/signup" className="inline-link font-medium">
+              Register your estate
+            </Link>
+          </p>
+        </div>
       </div>
     </StyledDiv>
   );
 }
 
 export default Login;
+

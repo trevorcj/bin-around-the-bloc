@@ -1,30 +1,92 @@
-import manta from "../services/manta";
+import supabase from "../services/supabase";
 
 export default async function createPayment(payment) {
-  console.log("Creating payment:", payment);
+  console.log("Creating payment in Supabase:", payment);
 
-  const response = await manta.createRecords({
-    table: "batb-payments",
-    data: [payment],
-  });
+  // Check if payment already exists (deduplication)
+  if (payment.receiptid) {
+    const { data: existing } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("receiptid", payment.receiptid)
+      .maybeSingle();
 
-  console.log("Manta createRecords response:", response);
-
-  const createdResult = response?.data?.results?.[0];
-
-  console.log("Created result:", createdResult);
-
-  if (createdResult?.success) {
-    console.log("Payment created:", createdResult.record);
-    return createdResult.record;
+    if (existing) {
+      console.log("Payment already recorded:", existing);
+      return existing;
+    }
   }
 
-  const details =
-    createdResult?.error ||
-    response?.message ||
-    "Failed to create payment record.";
+  // Look up user profile to populate estate_id and resident_id if not present
+  let estateId = payment.estate_id;
+  let residentId = payment.resident_id;
 
-  console.error("Payment persistence error:", details);
+  if ((!estateId || !residentId) && payment.email) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, estate_id")
+      .eq("email", payment.email)
+      .maybeSingle();
 
-  throw new Error(`Payment persistence error: ${details}`);
+    if (profile) {
+      estateId = estateId || profile.estate_id;
+      residentId = residentId || profile.id;
+    }
+  }
+
+  const recordToInsert = {
+    receiptid: payment.receiptid,
+    estate_id: estateId || null,
+    resident_id: residentId || null,
+    bill_id: payment.bill_id || null,
+    email: payment.email,
+    fullname: payment.fullname,
+    address: payment.address,
+    amount: payment.amount,
+    totalPaid: payment.totalPaid ?? payment.amount,
+    month: payment.month,
+    year: payment.year,
+    status: payment.status || "Successful",
+    paymentMethod: payment.paymentMethod || "Paystack",
+    reference: payment.reference || payment.receiptid,
+    recorded_by: payment.recorded_by || "resident",
+    createdat: payment.createdat || new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("payments")
+    .insert([recordToInsert])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Supabase payment persistence error:", error);
+    throw new Error(`Payment persistence error: ${error.message}`);
+  }
+
+  // If status is Successful, mark the corresponding bill as Paid
+  if (data.status === "Successful") {
+    try {
+      if (data.bill_id) {
+        await supabase
+          .from("bills")
+          .update({ status: "Paid", paid_at: new Date().toISOString() })
+          .eq("id", data.bill_id);
+      } else if (residentId) {
+        // Mark any unpaid bill for this resident and month/year as paid
+        await supabase
+          .from("bills")
+          .update({ status: "Paid", paid_at: new Date().toISOString() })
+          .eq("resident_id", residentId)
+          .ilike("month", payment.month)
+          .eq("year", payment.year);
+      }
+    } catch (billErr) {
+      console.warn("Could not mark bill as paid:", billErr);
+    }
+  }
+
+  console.log("Payment created successfully:", data);
+  return data;
 }
+

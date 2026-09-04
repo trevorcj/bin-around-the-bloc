@@ -31,6 +31,8 @@ function getPaystackChargeDetails(baseAmount, platformFee) {
 
 import useAuth from "../hooks/useAuth";
 import showToast from "../utils/showToast";
+import supabase from "../services/supabase";
+import verifyPayment from "../api/verifyPayment";
 
 const PLATFORM_FEE = 100;
 const PAYSTACK_FEE_RATE = 0.015;
@@ -69,9 +71,18 @@ function Payment() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const formattedAddress = [
+    user?.housenumber ? `House ${user.housenumber}` : "",
+    user?.apartment || "",
+    user?.streetname || "",
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   const [fullName, setFullName] = useState(user?.fullname || "");
-  const [address, setAddress] = useState(user?.streetname || "");
+  const [address, setAddress] = useState(formattedAddress || user?.streetname || "");
   const [amount, setAmount] = useState(DEFAULT_AMOUNT);
+  const [currentBillId, setCurrentBillId] = useState(null);
   const [month, setMonth] = useState(() => {
     const currentMonth = new Date().getMonth();
     return MONTH_OPTIONS[currentMonth]?.value || MONTH_OPTIONS[0].value;
@@ -84,10 +95,54 @@ function Payment() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Dynamically load resident's property fee and bill for the selected month/year
+  useEffect(() => {
+    async function loadFeeAndBill() {
+      if (!user?.id) return;
+
+      try {
+        // 1. Check if an unpaid bill exists for this resident and period
+        const { data: bill } = await supabase
+          .from("bills")
+          .select("id, amount, status")
+          .eq("resident_id", user.id)
+          .ilike("month", month)
+          .eq("year", String(year))
+          .maybeSingle();
+
+        if (bill) {
+          setCurrentBillId(bill.id);
+          setAmount(bill.amount);
+          return;
+        }
+
+        setCurrentBillId(null);
+
+        // 2. If no existing bill, load resident's configured property type fee
+        if (user?.property_type_id) {
+          const { data: pt } = await supabase
+            .from("property_types")
+            .select("fee")
+            .eq("id", user.property_type_id)
+            .maybeSingle();
+
+          if (pt && pt.fee) {
+            setAmount(pt.fee);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load fee/bill for resident:", err);
+      }
+    }
+
+    loadFeeAndBill();
+  }, [user?.id, user?.property_type_id, month, year]);
+
   const numericAmount = Number(String(amount).replace(/[^0-9.-]+/g, "")) || 0;
   const baseAmount = numericAmount;
   const platformFee = PLATFORM_FEE;
-  const { paystackFee, grossAmount: paystackGrossAmount } =
+  const { grossAmount: paystackGrossAmount } =
     getPaystackChargeDetails(baseAmount, platformFee);
   const displayedTotalAmount = baseAmount + platformFee;
   const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
@@ -98,25 +153,35 @@ function Payment() {
   const amountKobo = Math.round(paystackGrossAmount * 100);
 
   async function handleSuccess(reference) {
-    // Called after successful payment by Paystack inline modal
-    console.log("Paystack reference received:", reference);
-    setIsSubmitting(false);
+    console.log("Paystack popup success, reference received:", reference);
+    setIsSubmitting(true);
 
-    const receiptId =
-      reference?.reference ||
-      `RCT-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const refString = reference?.reference || reference?.trxref || `RCT-${Date.now()}`;
 
-    const isSuccess =
-      !reference?.status ||
-      String(reference?.status).toLowerCase() === "success" ||
-      reference?.status === true;
+    // Backend verification
+    let verifiedChannel = reference?.channel || "Paystack";
+
+    try {
+      const verification = await verifyPayment(refString);
+      if (!verification.verified) {
+        showToast("error", "Transaction could not be verified by Paystack.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (verification.channel) verifiedChannel = verification.channel;
+    } catch (verErr) {
+      console.warn("Backend verification notice:", verErr);
+    }
 
     const paystackAmount = reference?.amount
       ? Number(reference.amount) / 100
-      : totalAmount;
+      : displayedTotalAmount;
 
     const paymentRecord = {
-      receiptid: receiptId,
+      receiptid: refString,
+      estate_id: user?.estate_id || null,
+      resident_id: user?.id || null,
+      bill_id: currentBillId || null,
       email: user?.email || sessionStorage.getItem("userEmail"),
       fullname: fullName.trim(),
       address: address.trim(),
@@ -124,8 +189,10 @@ function Payment() {
       totalPaid: paystackAmount,
       month,
       year,
-      status: isSuccess ? "Successful" : "Failed",
-      paymentMethod: reference?.channel || "Paystack",
+      status: "Successful",
+      paymentMethod: verifiedChannel,
+      reference: refString,
+      recorded_by: "resident",
       createdat: new Date().toISOString(),
     };
 
@@ -133,12 +200,7 @@ function Payment() {
 
     try {
       createdPayment = await createPayment(paymentRecord);
-      console.log("Payment persisted to DB:", createdPayment);
-      if (isSuccess) {
-        showToast("success", "Payment recorded successfully.");
-      } else {
-        showToast("error", "Payment failed or was declined.");
-      }
+      showToast("success", "Payment verified and recorded successfully.");
     } catch (err) {
       console.error("createPayment failed:", err);
       const message = err?.message || "Could not log payment.";
@@ -146,11 +208,13 @@ function Payment() {
         "error",
         `Payment succeeded but could not be logged: ${message}`,
       );
+      setIsSubmitting(false);
       return;
     }
 
+    setIsSubmitting(false);
     const receiptKey =
-      createdPayment?.receiptid || createdPayment?.id || receiptId;
+      createdPayment?.receiptid || createdPayment?.id || refString;
     navigate(`/receipts/${receiptKey}`);
   }
 

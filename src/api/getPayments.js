@@ -1,4 +1,4 @@
-import manta from "../services/manta";
+import supabase from "../services/supabase";
 
 const itemsPerPage = 5;
 
@@ -10,33 +10,55 @@ export default async function getPayments({
 }) {
   const userEmail = sessionStorage.getItem("userEmail");
 
-  const filters = {};
+  if (!userEmail) {
+    return {
+      data: [],
+      totalPages: 1,
+      total: 0,
+      itemsPerPage,
+    };
+  }
+
+  let query = supabase
+    .from("payments")
+    .select("*", { count: "exact" })
+    .ilike("email", userEmail);
 
   if (status !== "all") {
-    filters.status = status.charAt(0).toUpperCase() + status.slice(1);
+    query = query.ilike("status", status);
   }
 
   if (month !== "all") {
-    filters.month = month;
+    query = query.ilike("month", month);
   }
 
-  const payments = await manta.fetchAllRecords({
-    table: "batb-payments",
-    where: { ...filters, email: userEmail },
-    page,
-    list: itemsPerPage,
-    orderBy: "createdat",
-    order: "desc",
-    search: {
-      columns: ["receiptid", "month", "year"],
-      query: search,
-    },
-  });
+  if (search && search.trim()) {
+    const term = search.trim();
+    query = query.or(
+      `receiptid.ilike.%${term}%,month.ilike.%${term}%,year.ilike.%${term}%,reference.ilike.%${term}%`
+    );
+  }
+
+  const from = (page - 1) * itemsPerPage;
+  const to = from + itemsPerPage - 1;
+
+  query = query.order("createdat", { ascending: false }).range(from, to);
+
+  const { data, count, error } = await query;
+
+  if (error) {
+    console.error("Error fetching payments from Supabase:", error);
+    throw new Error(error.message);
+  }
+
+  const total = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
 
   return {
-    data: payments?.data,
-    totalPages: payments?.meta?.totalPages,
-    total: payments?.meta?.total,
+    data: data || [],
+    totalPages,
+    total,
     itemsPerPage,
   };
 }
+

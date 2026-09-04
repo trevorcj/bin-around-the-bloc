@@ -1,21 +1,21 @@
-import manta from "../services/manta";
+import supabase from "../services/supabase";
 
 export default async function updateUserProfile(currentEmail, updates) {
   if (!currentEmail) {
     throw new Error("Missing account identifier.");
   }
 
-  const response = await manta.updateRecords({
-    table: "batb-users",
-    where: { email: currentEmail },
-    data: updates,
-  });
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(updates)
+    .eq("email", currentEmail)
+    .select()
+    .single();
 
-  const payload = response?.data ?? response;
-
-  if (payload?.status === false || payload?.success === false) {
-    throw new Error(payload?.message || "Unable to update your profile.");
+  if (error) {
+    throw new Error(error.message || "Unable to update your profile.");
   }
 
-  return payload?.data ?? payload ?? null;
+  return data ?? null;
 }
+

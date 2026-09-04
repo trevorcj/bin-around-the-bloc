@@ -1,14 +1,18 @@
-import manta from "../services/manta";
+import supabase from "../services/supabase";
 
 async function fetchReceiptByField(field, value) {
-  const response = await manta.fetchOneRecord({
-    table: "batb-payments",
-    where: {
-      [field]: value,
-    },
-  });
+  const { data, error } = await supabase
+    .from("payments")
+    .select("*")
+    .eq(field, value)
+    .maybeSingle();
 
-  return response?.data?.data ?? null;
+  if (error) {
+    console.warn(`Error querying receipt by ${field}:`, error.message);
+    return null;
+  }
+
+  return data ?? null;
 }
 
 export default async function getReceipt(receiptId) {
@@ -31,3 +35,4 @@ export default async function getReceipt(receiptId) {
     return null;
   }
 }
+
