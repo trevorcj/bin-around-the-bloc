@@ -67,7 +67,11 @@ function DashboardGrid({ user: propUser }) {
     },
   });
 
-  const { data: paymentsData, isLoading: paymentsLoading, error } = usePayments({
+  const {
+    data: paymentsData,
+    isLoading: paymentsLoading,
+    error,
+  } = usePayments({
     search: "",
     status: "all",
     month: "all",
@@ -79,11 +83,11 @@ function DashboardGrid({ user: propUser }) {
   const lastPayment = allPayments[0] || null;
 
   const unpaidBills = bills.filter(
-    (bill) => normalizeStatus(bill.status) === "unpaid"
+    (bill) => normalizeStatus(bill.status) === "unpaid",
   );
   const unpaidSum = unpaidBills.reduce(
     (acc, b) => acc + (Number(b.amount) || 0),
-    0
+    0,
   );
   const openingBalance = Number(user?.opening_balance) || 0;
   const totalOutstanding = unpaidSum + openingBalance;
@@ -103,7 +107,7 @@ function DashboardGrid({ user: propUser }) {
             "flex flex-col justify-between rounded-sm border p-5 transition-shadow",
             totalOutstanding > 0
               ? "border-amber-300 bg-amber-50/40"
-              : "border-brand-accent/10 bg-white"
+              : "border-brand-accent/10 bg-white",
           )}>
           <div className="flex items-start justify-between">
             <div
@@ -111,7 +115,7 @@ function DashboardGrid({ user: propUser }) {
                 "flex h-11 w-11 items-center justify-center rounded-sm",
                 totalOutstanding > 0
                   ? "bg-amber-100 text-amber-700"
-                  : "bg-emerald-100 text-emerald-700"
+                  : "bg-emerald-100 text-emerald-700",
               )}>
               {totalOutstanding > 0 ? (
                 <AlertCircle size={22} />
@@ -139,14 +143,14 @@ function DashboardGrid({ user: propUser }) {
             <h3
               className={clsx(
                 "mt-2 text-2xl font-semibold tracking-tight",
-                totalOutstanding > 0 ? "text-amber-900" : "text-brand-accent"
+                totalOutstanding > 0 ? "text-amber-900" : "text-brand-accent",
               )}>
               {billsLoading ? "..." : formatCurrency(totalOutstanding, "NGN")}
             </h3>
             <p className="mt-1 text-xs text-brand-accent/60">
               {totalOutstanding > 0
                 ? `${unpaidBills.length} unpaid bill(s) pending payment`
-                : "All bills settled • Account in good standing"}
+                : "All bills settled"}
             </p>
           </div>
         </article>
@@ -223,7 +227,7 @@ function DashboardGrid({ user: propUser }) {
                 {unpaidBills
                   .map(
                     (b) =>
-                      `${b.month ? b.month.charAt(0).toUpperCase() + b.month.slice(1) : ""} ${b.year || ""}`
+                      `${b.month ? b.month.charAt(0).toUpperCase() + b.month.slice(1) : ""} ${b.year || ""}`,
                   )
                   .join(", ")}
                 .
@@ -291,7 +295,7 @@ function DashboardGrid({ user: propUser }) {
               <span
                 className={clsx(
                   "inline-flex rounded-full px-3 py-1 text-xs font-medium",
-                  getDashboardStatusClasses(row.status)
+                  getDashboardStatusClasses(row.status),
                 )}>
                 {row.status}
               </span>
@@ -306,7 +310,9 @@ function DashboardGrid({ user: propUser }) {
           return (
             <article
               key={row.id || row.receiptid}
-              onClick={() => navigate(`/app/receipts/${row.receiptid || row.id}`)}
+              onClick={() =>
+                navigate(`/app/receipts/${row.receiptid || row.id}`)
+              }
               className="space-y-3 p-4 cursor-pointer">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -321,7 +327,7 @@ function DashboardGrid({ user: propUser }) {
                 <span
                   className={clsx(
                     "inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-medium",
-                    getDashboardStatusClasses(row.status)
+                    getDashboardStatusClasses(row.status),
                   )}>
                   {row.status}
                 </span>
@@ -358,4 +364,3 @@ function DashboardGrid({ user: propUser }) {
 }
 
 export default DashboardGrid;
-

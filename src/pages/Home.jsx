@@ -2,9 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Building2,
-  ShieldCheck,
   ArrowRight,
-  CheckCircle2,
   Receipt,
   FileSpreadsheet,
   Clock,
@@ -23,7 +21,7 @@ function Home() {
   const faqs = [
     {
       q: "How do resident payments reach our estate bank account?",
-      a: "Bin Around The Bloc integrates directly with Paystack via dedicated settlement subaccounts. Resident dues are paid online and settled automatically into the estate's verified bank account every morning (next business day T+1) without platform holding or custody delays.",
+      a: "Bin Around The Bloc integrates directly with Paystack via dedicated settlement subaccounts. Resident dues are paid online and settled automatically into the estate's verified bank account every morning (next business day) without platform holding or custody delays.",
     },
     {
       q: "Can different property types pay different monthly dues?",
@@ -102,23 +100,37 @@ function Home() {
       <header className="sticky top-0 z-50 border-b border-brand-accent/8 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-20">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src="/logo.svg" alt="Bin Around The Bloc" className="h-8 w-auto" />
+            <img
+              src="/logo.svg"
+              alt="Bin Around The Bloc"
+              className="h-8 w-auto"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-brand-accent/70">
-            <a href="#how-it-works" className="hover:text-brand-accent transition-colors">
+            <a
+              href="#how-it-works"
+              className="hover:text-brand-accent transition-colors">
               How it works
             </a>
-            <a href="#features" className="hover:text-brand-accent transition-colors">
+            <a
+              href="#features"
+              className="hover:text-brand-accent transition-colors">
               Capabilities
             </a>
-            <a href="#reconciliation" className="hover:text-brand-accent transition-colors">
+            <a
+              href="#reconciliation"
+              className="hover:text-brand-accent transition-colors">
               Reconciliation
             </a>
-            <a href="#settlement" className="hover:text-brand-accent transition-colors">
+            <a
+              href="#settlement"
+              className="hover:text-brand-accent transition-colors">
               Payouts
             </a>
-            <a href="#faq" className="hover:text-brand-accent transition-colors">
+            <a
+              href="#faq"
+              className="hover:text-brand-accent transition-colors">
               FAQ
             </a>
           </nav>
@@ -142,17 +154,14 @@ function Home() {
       <section className="relative overflow-hidden pt-16 pb-24 sm:pt-24 sm:pb-32 bg-radial from-brand-primary/5 via-stone-50 to-stone-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-3.5 py-1 text-xs font-semibold text-brand-primary mb-6">
-              <ShieldCheck size={14} />
-              <span>Estate Waste Dues & Automated Settlements</span>
-            </div>
-
             <h1 className="text-4xl font-headlines sm:text-6xl text-brand-accent tracking-tight leading-[1.1]">
               Make waste collection payments effortless for your estate.
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-brand-accent/75 leading-relaxed">
-              Automate monthly dues, eliminate unverified bank alerts, and receive direct Paystack settlements into your estate's bank account every morning.
+              Automate monthly dues, eliminate unverified bank alerts, and
+              receive direct Paystack settlements into your estate's bank
+              account every morning.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -171,13 +180,16 @@ function Home() {
 
             <div className="mt-8 flex items-center justify-center gap-6 text-xs text-brand-accent/60">
               <span className="inline-flex items-center gap-1.5">
-                <Check size={14} className="text-brand-primary" /> Zero platform holding
+                <Check size={14} className="text-brand-primary" /> Zero platform
+                holding
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check size={14} className="text-brand-primary" /> Next-morning bank payouts
+                <Check size={14} className="text-brand-primary" /> Next-morning
+                bank payouts
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check size={14} className="text-brand-primary" /> Waste contractor reports
+                <Check size={14} className="text-brand-primary" /> Waste
+                contractor reports
               </span>
             </div>
           </div>
@@ -190,7 +202,8 @@ function Home() {
                     Live Estate Dashboard
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-status-success/10 px-2 py-0.5 text-[11px] font-semibold text-status-success">
-                    <span className="h-1.5 w-1.5 rounded-full bg-status-success animate-pulse" /> Connected
+                    <span className="h-1.5 w-1.5 rounded-full bg-status-success animate-pulse" />{" "}
+                    Connected
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-brand-accent mt-0.5">
@@ -200,7 +213,9 @@ function Home() {
 
               <div className="flex items-center gap-2">
                 <div className="rounded-sm bg-brand-accent/4 px-3 py-1.5 text-right">
-                  <p className="text-[11px] text-brand-accent/50">Estate Code</p>
+                  <p className="text-[11px] text-brand-accent/50">
+                    Estate Code
+                  </p>
                   <p className="font-mono font-bold text-sm text-brand-accent tracking-wider">
                     GRN-4821
                   </p>
@@ -210,88 +225,40 @@ function Home() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-5">
               <div className="rounded-sm border border-brand-accent/8 bg-brand-accent/2 p-4">
-                <p className="text-xs font-medium text-brand-accent/60">Monthly Collections</p>
-                <p className="text-2xl font-bold text-brand-accent mt-1">₦1,450,000</p>
-                <p className="text-xs text-status-success font-medium mt-1">↑ 92% collection rate</p>
+                <p className="text-xs font-medium text-brand-accent/60">
+                  Monthly Collections
+                </p>
+                <p className="text-2xl font-bold text-brand-accent mt-1">
+                  ₦1,450,000
+                </p>
+                <p className="text-xs text-status-success font-medium mt-1">
+                  ↑ 92% collection rate
+                </p>
               </div>
 
               <div className="rounded-sm border border-brand-accent/8 bg-brand-accent/2 p-4">
-                <p className="text-xs font-medium text-brand-accent/60">Registered Residents</p>
-                <p className="text-2xl font-bold text-brand-accent mt-1">168 Homes</p>
-                <p className="text-xs text-brand-accent/50 mt-1">Across 7 designated streets</p>
+                <p className="text-xs font-medium text-brand-accent/60">
+                  Registered Residents
+                </p>
+                <p className="text-2xl font-bold text-brand-accent mt-1">
+                  168 Homes
+                </p>
+                <p className="text-xs text-brand-accent/50 mt-1">
+                  Across 7 designated streets
+                </p>
               </div>
 
               <div className="rounded-sm border border-brand-accent/8 bg-brand-accent/2 p-4">
-                <p className="text-xs font-medium text-brand-accent/60">Next Bank Settlement</p>
-                <p className="text-2xl font-bold text-brand-secondary mt-1">Tomorrow, 8:00 AM</p>
-                <p className="text-xs text-brand-accent/50 mt-1">Direct Paystack T+1 NUBAN payout</p>
+                <p className="text-xs font-medium text-brand-accent/60">
+                  Next Bank Settlement
+                </p>
+                <p className="text-2xl font-bold text-brand-secondary mt-1">
+                  Tomorrow, 8:00 AM
+                </p>
+                <p className="text-xs text-brand-accent/50 mt-1">
+                  Direct Paystack NUBAN payout
+                </p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-white border-y border-brand-accent/8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-secondary">
-              The Problem
-            </h2>
-            <p className="mt-2 text-3xl font-headlines sm:text-4xl text-brand-accent tracking-tight">
-              Stop chasing bank transfer screenshots.
-            </p>
-            <p className="mt-3 text-brand-accent/70 text-base">
-              Managing estate dues with spreadsheets and messaging chats creates disputes, missing money, and wasted executive hours.
-            </p>
-          </div>
-
-          <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="rounded-md border border-status-error/20 bg-status-error/[0.02] p-6 sm:p-8 space-y-4">
-              <div className="inline-flex rounded-sm bg-status-error/10 px-3 py-1 text-xs font-semibold text-status-error">
-                The Manual Chaos
-              </div>
-              <ul className="space-y-3.5 text-sm text-brand-accent/80">
-                <li className="flex items-start gap-2.5">
-                  <span className="text-status-error font-bold">✕</span>
-                  Unverified bank receipts posted to WhatsApp group chats.
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-status-error font-bold">✕</span>
-                  Treasurers spending weekends matching narration text to house numbers.
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-status-error font-bold">✕</span>
-                  Disputes on collection day over who paid for waste pickup.
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-status-error font-bold">✕</span>
-                  No automated reports for the waste management contractor.
-                </li>
-              </ul>
-            </div>
-
-            <div className="rounded-md border border-brand-primary/30 bg-brand-primary/[0.03] p-6 sm:p-8 space-y-4 shadow-sm">
-              <div className="inline-flex rounded-sm bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary">
-                The Bin Around The Bloc Way
-              </div>
-              <ul className="space-y-3.5 text-sm text-brand-accent/90">
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={18} className="text-brand-primary shrink-0 mt-0.5" />
-                  Instant online payment via Card or Transfer with zero screenshot chasing.
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={18} className="text-brand-primary shrink-0 mt-0.5" />
-                  Automated next-day morning bank settlements straight to your estate account.
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={18} className="text-brand-primary shrink-0 mt-0.5" />
-                  One-click street-by-street PDF & CSV exports for waste truck operators.
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={18} className="text-brand-primary shrink-0 mt-0.5" />
-                  Verifiable digital receipts generated automatically for every home.
-                </li>
-              </ul>
             </div>
           </div>
         </div>
@@ -313,9 +280,13 @@ function Home() {
               <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-brand-primary/10 text-brand-primary font-headlines text-xl font-bold">
                 01
               </div>
-              <h3 className="text-lg font-bold text-brand-accent">Set Up Your Estate</h3>
+              <h3 className="text-lg font-bold text-brand-accent">
+                Set Up Your Estate
+              </h3>
               <p className="text-sm text-brand-accent/70 leading-relaxed">
-                Add your streets, configure property categories with your monthly waste collection rates, and connect your verified estate bank account.
+                Add your streets, configure property categories with your
+                monthly waste collection rates, and connect your verified estate
+                bank account.
               </p>
             </div>
 
@@ -323,9 +294,13 @@ function Home() {
               <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-brand-primary/10 text-brand-primary font-headlines text-xl font-bold">
                 02
               </div>
-              <h3 className="text-lg font-bold text-brand-accent">Residents Self-Register</h3>
+              <h3 className="text-lg font-bold text-brand-accent">
+                Residents Self-Register
+              </h3>
               <p className="text-sm text-brand-accent/70 leading-relaxed">
-                Share your unique estate code. Residents register in 60 seconds, choose their street and property number, and access their personal dues portal.
+                Share your unique estate code. Residents register in 60 seconds,
+                choose their street and property number, and access their
+                personal dues portal.
               </p>
             </div>
 
@@ -333,16 +308,22 @@ function Home() {
               <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-brand-primary/10 text-brand-primary font-headlines text-xl font-bold">
                 03
               </div>
-              <h3 className="text-lg font-bold text-brand-accent">Collect & Auto-Reconcile</h3>
+              <h3 className="text-lg font-bold text-brand-accent">
+                Collect & Auto-Reconcile
+              </h3>
               <p className="text-sm text-brand-accent/70 leading-relaxed">
-                Residents pay seamlessly. Paystack settles directly to your account next business day, and our system generates complete street audits on demand.
+                Residents pay seamlessly. Paystack settles directly to your
+                account next business day, and our system generates complete
+                street audits on demand.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="features" className="py-24 bg-white border-t border-brand-accent/8">
+      <section
+        id="features"
+        className="py-24 bg-white border-t border-brand-accent/8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-secondary">
@@ -358,9 +339,12 @@ function Home() {
               <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-brand-accent text-white">
                 <Banknote size={20} />
               </div>
-              <h4 className="text-base font-bold text-brand-accent">Direct Paystack Settlements</h4>
+              <h4 className="text-base font-bold text-brand-accent">
+                Direct Paystack Settlements
+              </h4>
               <p className="text-xs text-brand-accent/70 leading-relaxed">
-                100% of resident collections route directly to your designated bank account with zero platform fees split.
+                100% of resident collections route directly to your designated
+                bank account with zero platform fees split.
               </p>
             </div>
 
@@ -368,9 +352,13 @@ function Home() {
               <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-brand-accent text-white">
                 <Building2 size={20} />
               </div>
-              <h4 className="text-base font-bold text-brand-accent">Tiered Property Dues</h4>
+              <h4 className="text-base font-bold text-brand-accent">
+                Tiered Property Dues
+              </h4>
               <p className="text-xs text-brand-accent/70 leading-relaxed">
-                Configure distinct dues for shops, duplexes, or flats. Rate adjustments protect historical bills and apply only to future cycles.
+                Configure distinct dues for shops, duplexes, or flats. Rate
+                adjustments protect historical bills and apply only to future
+                cycles.
               </p>
             </div>
 
@@ -378,9 +366,12 @@ function Home() {
               <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-brand-accent text-white">
                 <FileSpreadsheet size={20} />
               </div>
-              <h4 className="text-base font-bold text-brand-accent">Street-by-Street Audit Trail</h4>
+              <h4 className="text-base font-bold text-brand-accent">
+                Street-by-Street Audit Trail
+              </h4>
               <p className="text-xs text-brand-accent/70 leading-relaxed">
-                Reconcile collections house-by-house. Hand your waste collection crew a clean PDF manifest before each pickup run.
+                Reconcile collections house-by-house. Hand your waste collection
+                crew a clean PDF manifest before each pickup run.
               </p>
             </div>
 
@@ -388,9 +379,12 @@ function Home() {
               <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-brand-accent text-white">
                 <Receipt size={20} />
               </div>
-              <h4 className="text-base font-bold text-brand-accent">Instant Digital Receipts</h4>
+              <h4 className="text-base font-bold text-brand-accent">
+                Instant Digital Receipts
+              </h4>
               <p className="text-xs text-brand-accent/70 leading-relaxed">
-                Residents receive verifiable digital receipts for every payment, with reference codes, timestamps, and downloadable PDFs.
+                Residents receive verifiable digital receipts for every payment,
+                with reference codes, timestamps, and downloadable PDFs.
               </p>
             </div>
 
@@ -398,9 +392,13 @@ function Home() {
               <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-brand-accent text-white">
                 <Users size={20} />
               </div>
-              <h4 className="text-base font-bold text-brand-accent">Resident Self-Service</h4>
+              <h4 className="text-base font-bold text-brand-accent">
+                Resident Self-Service
+              </h4>
               <p className="text-xs text-brand-accent/70 leading-relaxed">
-                Residents can check billing history, verify payment status, and settle outstanding balances in seconds without contacting the admin.
+                Residents can check billing history, verify payment status, and
+                settle outstanding balances in seconds without contacting the
+                admin.
               </p>
             </div>
 
@@ -408,16 +406,21 @@ function Home() {
               <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-brand-accent text-white">
                 <CreditCard size={20} />
               </div>
-              <h4 className="text-base font-bold text-brand-accent">Pre-Platform Debt Management</h4>
+              <h4 className="text-base font-bold text-brand-accent">
+                Pre-Platform Debt Management
+              </h4>
               <p className="text-xs text-brand-accent/70 leading-relaxed">
-                Onboard residents with historical debts seamlessly. Opening balances are preserved and tracked alongside monthly dues.
+                Onboard residents with historical debts seamlessly. Opening
+                balances are preserved and tracked alongside monthly dues.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="reconciliation" className="py-24 bg-stone-50 border-t border-brand-accent/8">
+      <section
+        id="reconciliation"
+        className="py-24 bg-stone-50 border-t border-brand-accent/8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-primary">
@@ -427,7 +430,9 @@ function Home() {
               Audit-ready reconciliation for your waste contractors.
             </p>
             <p className="mt-3 text-sm sm:text-base text-brand-accent/70 leading-relaxed">
-              Generate full billing manifests filtered by street, property category, or payment status. Export to print-ready PDF or formatted CSV in one click.
+              Generate full billing manifests filtered by street, property
+              category, or payment status. Export to print-ready PDF or
+              formatted CSV in one click.
             </p>
           </div>
 
@@ -441,7 +446,7 @@ function Home() {
                     "px-3 py-1 rounded-sm text-xs font-medium cursor-pointer transition-colors",
                     activeReconTab === "all"
                       ? "bg-brand-accent text-white"
-                      : "text-brand-accent/70 hover:bg-brand-accent/5"
+                      : "text-brand-accent/70 hover:bg-brand-accent/5",
                   )}>
                   All Residents (5)
                 </button>
@@ -452,7 +457,7 @@ function Home() {
                     "px-3 py-1 rounded-sm text-xs font-medium cursor-pointer transition-colors",
                     activeReconTab === "paid"
                       ? "bg-brand-accent text-white"
-                      : "text-brand-accent/70 hover:bg-brand-accent/5"
+                      : "text-brand-accent/70 hover:bg-brand-accent/5",
                   )}>
                   Paid (3)
                 </button>
@@ -463,7 +468,7 @@ function Home() {
                     "px-3 py-1 rounded-sm text-xs font-medium cursor-pointer transition-colors",
                     activeReconTab === "unpaid"
                       ? "bg-brand-accent text-white"
-                      : "text-brand-accent/70 hover:bg-brand-accent/5"
+                      : "text-brand-accent/70 hover:bg-brand-accent/5",
                   )}>
                   Unpaid (2)
                 </button>
@@ -494,9 +499,14 @@ function Home() {
                   {filteredReconciliationRows.map((row, idx) => (
                     <tr key={idx} className="hover:bg-brand-accent/[0.015]">
                       <td className="px-4 py-3 font-medium text-brand-accent">
-                        {row.street}, <span className="text-brand-accent/60">{row.house}</span>
+                        {row.street},{" "}
+                        <span className="text-brand-accent/60">
+                          {row.house}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-brand-accent/80">{row.name}</td>
+                      <td className="px-4 py-3 text-brand-accent/80">
+                        {row.name}
+                      </td>
                       <td className="px-4 py-3">
                         <span className="px-2 py-0.5 rounded-sm bg-brand-accent/5 text-[11px]">
                           {row.type}
@@ -511,7 +521,7 @@ function Home() {
                             "inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold",
                             row.status === "Paid"
                               ? "bg-status-success/10 text-status-success"
-                              : "bg-status-warning/10 text-status-warning"
+                              : "bg-status-warning/10 text-status-warning",
                           )}>
                           {row.status}
                         </span>
@@ -525,7 +535,9 @@ function Home() {
         </div>
       </section>
 
-      <section id="settlement" className="py-20 bg-white border-t border-brand-accent/8">
+      <section
+        id="settlement"
+        className="py-20 bg-white border-t border-brand-accent/8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl rounded-md bg-[#0a2525] p-8 sm:p-12 text-white shadow-xl">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
@@ -537,27 +549,41 @@ function Home() {
                   Next business day bank deposits. Powered by Paystack.
                 </h3>
                 <p className="text-sm text-white/75 leading-relaxed">
-                  Payouts are automatically settled into the estate's bank account every morning (next business day T+1) by Paystack. Your funds are never held on intermediate ledgers.
+                  Payouts are automatically settled into the estate's bank
+                  account every morning (next business day) by Paystack. Your
+                  funds are never held on intermediate ledgers.
                 </p>
                 <div className="flex items-center gap-4 pt-2">
                   <span className="text-xs uppercase tracking-widest text-white/50 font-semibold">
                     Official Settlement Partner:
                   </span>
-                  <img src="/paystack.svg" alt="Paystack" className="h-5 opacity-90" />
+                  <img
+                    src="/paystack.svg"
+                    alt="Paystack"
+                    className="h-5 opacity-90"
+                  />
                 </div>
               </div>
 
               <div className="rounded-sm border border-white/15 bg-white/5 p-6 text-center shrink-0 space-y-2">
-                <p className="text-xs uppercase tracking-wider text-white/60">Platform Deduction</p>
-                <p className="text-4xl font-headlines font-bold text-white">0%</p>
-                <p className="text-xs text-brand-secondary">100% of dues go to your estate</p>
+                <p className="text-xs uppercase tracking-wider text-white/60">
+                  Platform Deduction
+                </p>
+                <p className="text-4xl font-headlines font-bold text-white">
+                  0%
+                </p>
+                <p className="text-xs text-brand-secondary">
+                  100% of dues go to your estate
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="faq" className="py-24 bg-stone-50 border-t border-brand-accent/8">
+      <section
+        id="faq"
+        className="py-24 bg-stone-50 border-t border-brand-accent/8">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-primary">
@@ -584,7 +610,7 @@ function Home() {
                       size={18}
                       className={clsx(
                         "text-brand-accent/50 transition-transform duration-200 shrink-0",
-                        isOpen && "rotate-180 text-brand-accent"
+                        isOpen && "rotate-180 text-brand-accent",
                       )}
                     />
                   </button>
@@ -607,7 +633,8 @@ function Home() {
             Ready to modernize waste collection in your estate?
           </h2>
           <p className="mt-4 text-base sm:text-lg text-white/75 max-w-2xl mx-auto">
-            Join forward-thinking estates managing waste dues with automated billing, transparent ledgers, and zero friction.
+            Join forward-thinking estates managing waste dues with automated
+            billing, transparent ledgers, and zero friction.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -630,20 +657,35 @@ function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <img src="/logo.svg" alt="Bin Around The Bloc" className="h-6 w-auto" />
-              <span>&copy; {new Date().getFullYear()} Bin Around The Bloc. All rights reserved.</span>
+              <img
+                src="/logo.svg"
+                alt="Bin Around The Bloc"
+                className="h-6 w-auto"
+              />
+              <span>
+                &copy; {new Date().getFullYear()} Bin Around The Bloc. All
+                rights reserved.
+              </span>
             </div>
 
             <div className="flex items-center gap-6">
-              <Link to="/login" className="hover:text-brand-accent transition-colors">
+              <Link
+                to="/login"
+                className="hover:text-brand-accent transition-colors">
                 Resident Portal
               </Link>
-              <Link to="/admin/signup" className="hover:text-brand-accent transition-colors">
+              <Link
+                to="/admin/signup"
+                className="hover:text-brand-accent transition-colors">
                 Estate Registration
               </Link>
               <div className="flex items-center gap-2 text-brand-accent/40">
                 <span>Secured by</span>
-                <img src="/paystack-dark.svg" alt="Paystack" className="h-3.5 opacity-70" />
+                <img
+                  src="/paystack-dark.svg"
+                  alt="Paystack"
+                  className="h-3.5 opacity-70"
+                />
               </div>
             </div>
           </div>

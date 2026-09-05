@@ -1,6 +1,6 @@
 import { Toaster } from "react-hot-toast";
 import { Route, Routes, Navigate, useParams } from "react-router-dom";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import useAuth from "./hooks/useAuth.js";
 
@@ -45,7 +45,7 @@ function App() {
     <>
       <Toaster />
 
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
 
       <Routes>
         <Route path="/" element={<Home />} />

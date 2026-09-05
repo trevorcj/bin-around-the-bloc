@@ -1,4 +1,4 @@
-import { Building2, MapPin, ShieldCheck, Tag } from "lucide-react";
+import { Building2, MapPin, Tag } from "lucide-react";
 import { StyledH1 } from "../styles/CommonStyles";
 import DashboardGrid from "../ui/DashboardGrid";
 import formatCurrency from "../utils/formatCurrency";
@@ -13,7 +13,8 @@ function Dashboard({ user }) {
     user?.apartment ? `(${user.apartment})` : "",
     user?.streetname || "",
   ].filter(Boolean);
-  const fullAddress = addressParts.length > 0 ? addressParts.join(" ") : "Address pending";
+  const fullAddress =
+    addressParts.length > 0 ? addressParts.join(" ") : "Address pending";
 
   return (
     <div className="space-y-6">
@@ -27,7 +28,6 @@ function Dashboard({ user }) {
 
         {estateCode && (
           <div className="inline-flex items-center gap-2 self-start rounded-full border border-brand-accent/10 bg-white px-3 py-1.5 text-xs font-semibold text-brand-accent sm:self-auto">
-            <ShieldCheck size={14} className="text-emerald-600" />
             <span>Estate Code: {estateCode}</span>
           </div>
         )}
@@ -60,7 +60,9 @@ function Dashboard({ user }) {
               <Tag size={14} className="text-brand-accent/60" />
               <div>
                 <span className="text-brand-accent/50">Category: </span>
-                <span className="font-semibold text-brand-accent">{propertyType}</span>
+                <span className="font-semibold text-brand-accent">
+                  {propertyType}
+                </span>
               </div>
             </div>
 

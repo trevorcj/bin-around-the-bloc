@@ -173,7 +173,9 @@ function Payment() {
     loadPeriodBilling();
   }, [user?.id, user?.property_type_id, user?.estate_id, user?.property_type_name, month, year]);
 
-  const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+  const PAYSTACK_PUBLIC_KEY =
+    import.meta.env.VITE_PAYSTACK_PUBLIC_KEY ||
+    "pk_test_314f8bf58f6e9504596192895c41207003bc263a";
   const initializePayment = usePaystackPayment({
     publicKey: PAYSTACK_PUBLIC_KEY || "",
   });

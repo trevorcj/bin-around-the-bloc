@@ -11,7 +11,6 @@ import {
   Check,
   AlertCircle,
   Landmark,
-  ShieldCheck,
 } from "lucide-react";
 import clsx from "clsx";
 import useAuth from "../../hooks/useAuth";
@@ -157,7 +156,8 @@ function AdminSettings() {
       <div>
         <StyledH1>Estate Settings</StyledH1>
         <p className="text-brand-accent/80 mt-1">
-          Configure estate parameters, onboarding code, streets, and snapshot-safe property fee categories.
+          Configure estate parameters, onboarding code, streets, and
+          snapshot-safe property fee categories.
         </p>
       </div>
 
@@ -323,7 +323,8 @@ function AdminSettings() {
 
         {streets.length === 0 ? (
           <p className="text-xs text-brand-accent/50 py-2">
-            No streets added yet. Add your estate's streets so new residents can easily select them during registration.
+            No streets added yet. Add your estate's streets so new residents can
+            easily select them during registration.
           </p>
         ) : (
           <div className="divide-y divide-brand-accent/8">
@@ -337,7 +338,7 @@ function AdminSettings() {
                       "font-medium",
                       st.is_archived
                         ? "text-brand-accent/40 line-through"
-                        : "text-brand-accent"
+                        : "text-brand-accent",
                     )}>
                     {st.name}
                   </span>
@@ -366,7 +367,9 @@ function AdminSettings() {
                       })
                     }
                     className="p-1 text-brand-accent/50 hover:text-status-error cursor-pointer"
-                    title={st.is_archived ? "Unarchive street" : "Archive street"}>
+                    title={
+                      st.is_archived ? "Unarchive street" : "Archive street"
+                    }>
                     <Archive size={15} />
                   </button>
                 </div>
@@ -387,7 +390,8 @@ function AdminSettings() {
                 Property Categories & Waste Collection Fees
               </h2>
               <p className="text-xs text-brand-accent/50">
-                Configurable property categories with snapshot-safe monthly charges.
+                Configurable property categories with snapshot-safe monthly
+                charges.
               </p>
             </div>
           </div>
@@ -401,15 +405,21 @@ function AdminSettings() {
         </div>
 
         <div className="p-3 bg-brand-accent/2 border border-brand-accent/10 rounded-sm text-xs text-brand-accent/65 flex items-start gap-2">
-          <AlertCircle size={16} className="text-brand-primary shrink-0 mt-0.5" />
+          <AlertCircle
+            size={16}
+            className="text-brand-primary shrink-0 mt-0.5"
+          />
           <span>
-            <strong>Historical Snapshot Protection:</strong> When you update a category's fee, existing bills and transaction records remain unchanged. Only newly generated bills will use the updated rate.
+            <strong>Historical Snapshot Protection:</strong> When you update a
+            category's fee, existing bills and transaction records remain
+            unchanged. Only newly generated bills will use the updated rate.
           </span>
         </div>
 
         {propertyTypes.length === 0 ? (
           <p className="text-xs text-brand-accent/50 py-2">
-            No property categories configured yet. Add categories (e.g. House, Flat, Shop) before residents register.
+            No property categories configured yet. Add categories (e.g. House,
+            Flat, Shop) before residents register.
           </p>
         ) : (
           <div className="divide-y divide-brand-accent/8">
@@ -423,7 +433,7 @@ function AdminSettings() {
                       "font-semibold text-base",
                       pt.is_archived
                         ? "text-brand-accent/40 line-through"
-                        : "text-brand-accent"
+                        : "text-brand-accent",
                     )}>
                     {pt.name}
                   </span>
@@ -473,19 +483,22 @@ function AdminSettings() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-brand-accent">Payout Account</h2>
+                <h2 className="text-lg font-semibold text-brand-accent">
+                  Payout Account
+                </h2>
                 {estate?.payout_account_status === "connected" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
-                    <ShieldCheck size={12} /> Connected
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/70 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+                    Connected
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100/70 px-2.5 py-0.5 text-xs font-medium text-amber-900">
                     Not connected
                   </span>
                 )}
               </div>
               <p className="mt-1 text-xs text-brand-accent/65">
-                This is the bank account where payments collected from residents will be settled.
+                This is the bank account where payments collected from residents
+                will be settled.
               </p>
             </div>
           </div>
@@ -493,8 +506,11 @@ function AdminSettings() {
           <Button
             onClick={() => setIsPayoutModalOpen(true)}
             variant="outline"
-            size="small">
-            {estate?.payout_account_status === "connected" ? "Change Account" : "Connect Account"}
+            size="small"
+            className="whitespace-nowrap inline-flex items-center justify-center px-4">
+            {estate?.payout_account_status === "connected"
+              ? "Change Account"
+              : "Connect Account"}
           </Button>
         </div>
 
@@ -530,7 +546,8 @@ function AdminSettings() {
             </div>
 
             <div className="rounded-sm border border-brand-accent/10 bg-brand-accent/[0.02] p-3 text-xs text-brand-accent/75">
-              Payouts are automatically settled into the estate&apos;s bank account every morning (next business day T+1) by Paystack.
+              Payouts are automatically settled into the estate&apos;s bank
+              account every morning (next business day) by Paystack.
             </div>
           </div>
         ) : (
@@ -539,7 +556,8 @@ function AdminSettings() {
               No payout account connected yet
             </p>
             <p className="mt-1 text-xs text-brand-accent/60 max-w-md mx-auto">
-              Connect your estate bank account to start receiving automated settlements from resident waste-collection payments directly.
+              Connect your estate bank account to start receiving automated
+              settlements from resident waste-collection payments directly.
             </p>
             <div className="mt-4">
               <Button size="small" onClick={() => setIsPayoutModalOpen(true)}>
@@ -724,7 +742,8 @@ function AdminSettings() {
             />
 
             <p className="text-xs text-brand-accent/50">
-              Changing this fee will apply to new monthly bills. Past bills and payment receipts are preserved.
+              Changing this fee will apply to new monthly bills. Past bills and
+              payment receipts are preserved.
             </p>
 
             <div className="flex justify-end gap-2 pt-2">

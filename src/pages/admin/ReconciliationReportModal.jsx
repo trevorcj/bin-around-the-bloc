@@ -1,16 +1,12 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Download,
   FileText,
   FileSpreadsheet,
-  Users,
-  CheckCircle2,
-  XCircle,
-  TrendingUp,
-  AlertCircle,
   Loader2,
+  Filter,
 } from "lucide-react";
+import clsx from "clsx";
 import Modal from "../../ui/Modal";
 import DropdownUi from "../../ui/DropdownUi";
 import { getEstateReconciliation } from "../../api/adminApi";
@@ -42,12 +38,6 @@ const YEAR_OPTIONS = [
   { label: "2028", value: "2028" },
   { label: "2029", value: "2029" },
   { label: "2030", value: "2030" },
-];
-
-const STATUS_FILTER_OPTIONS = [
-  { label: "All Payment Status", value: "all" },
-  { label: "Paid Only", value: "paid" },
-  { label: "Unpaid Only", value: "unpaid" },
 ];
 
 function ReconciliationReportModal({ isOpen, onClose, estateId }) {
@@ -182,414 +172,215 @@ function ReconciliationReportModal({ isOpen, onClose, estateId }) {
     showToast("success", "Reconciliation CSV exported successfully.");
   }
 
-  function handleExportUnpaid(format = "pdf") {
-    const unpaidRows = records.filter((r) => r.status === "Unpaid");
-    if (unpaidRows.length === 0) {
-      showToast("info", "All residents have settled for this period! No unpaid records.");
-      return;
-    }
-
-    const unpaidExpected = unpaidRows.reduce(
-      (acc, r) => acc + (Number(r.expected_fee) || 0),
-      0
-    );
-
-    const unpaidSummary = {
-      totalResidents: unpaidRows.length,
-      paidCount: 0,
-      unpaidCount: unpaidRows.length,
-      paidPercentage: 0,
-      unpaidPercentage: 100,
-      totalExpected: unpaidExpected,
-      totalCollected: 0,
-      totalOutstanding: unpaidExpected,
-    };
-
-    if (format === "pdf") {
-      downloadReconciliationPdf({
-        estate,
-        periodText,
-        rows: unpaidRows,
-        summary: unpaidSummary,
-        filterDescription: "Unpaid Residents (Collection Follow-up)",
-      });
-      showToast("success", "Unpaid residents PDF exported.");
-    } else {
-      downloadReconciliationCsv({
-        estate,
-        periodText: `${periodText} (Unpaid)`,
-        rows: unpaidRows,
-      });
-      showToast("success", "Unpaid residents CSV exported.");
-    }
-  }
-
-  function handleExportPaid(format = "pdf") {
-    const paidRows = records.filter((r) => r.status === "Paid");
-    if (paidRows.length === 0) {
-      showToast("info", "No verified payments found for this period.");
-      return;
-    }
-
-    const paidCollected = paidRows.reduce(
-      (acc, r) => acc + (Number(r.paid_amount) || 0),
-      0
-    );
-
-    const paidSummary = {
-      totalResidents: paidRows.length,
-      paidCount: paidRows.length,
-      unpaidCount: 0,
-      paidPercentage: 100,
-      unpaidPercentage: 0,
-      totalExpected: paidCollected,
-      totalCollected: paidCollected,
-      totalOutstanding: 0,
-    };
-
-    if (format === "pdf") {
-      downloadReconciliationPdf({
-        estate,
-        periodText,
-        rows: paidRows,
-        summary: paidSummary,
-        filterDescription: "Paid Residents (Waste Pickup Clearance)",
-      });
-      showToast("success", "Paid residents PDF exported.");
-    } else {
-      downloadReconciliationCsv({
-        estate,
-        periodText: `${periodText} (Paid)`,
-        rows: paidRows,
-      });
-      showToast("success", "Paid residents CSV exported.");
-    }
-  }
-
-  function handleFullReport(format = "pdf") {
-    if (records.length === 0) {
-      showToast("error", "No resident records found in this estate.");
-      return;
-    }
-
-    const fullExpected = records.reduce(
-      (acc, r) => acc + (Number(r.expected_fee) || 0),
-      0
-    );
-    const fullCollected = records.reduce(
-      (acc, r) => acc + (Number(r.paid_amount) || 0),
-      0
-    );
-    const fullPaidCount = records.filter((r) => r.status === "Paid").length;
-    const fullUnpaidCount = records.length - fullPaidCount;
-
-    const fullSummary = {
-      totalResidents: records.length,
-      paidCount: fullPaidCount,
-      unpaidCount: fullUnpaidCount,
-      paidPercentage: Math.round((fullPaidCount / records.length) * 100),
-      unpaidPercentage: Math.round((fullUnpaidCount / records.length) * 100),
-      totalExpected: fullExpected,
-      totalCollected: fullCollected,
-      totalOutstanding: Math.max(0, fullExpected - fullCollected),
-    };
-
-    if (format === "pdf") {
-      downloadReconciliationPdf({
-        estate,
-        periodText,
-        rows: records,
-        summary: fullSummary,
-        filterDescription: "Full Estate Billing Report (All Streets & Properties)",
-      });
-      showToast("success", "Full reconciliation PDF exported.");
-    } else {
-      downloadReconciliationCsv({
-        estate,
-        periodText,
-        rows: records,
-      });
-      showToast("success", "Full reconciliation CSV exported.");
-    }
-  }
+  const allCount = records.length;
+  const paidCountTotal = records.filter((r) => r.status === "Paid").length;
+  const unpaidCountTotal = records.filter((r) => r.status === "Unpaid").length;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="max-w-4xl"
+      maxWidth="max-w-5xl"
       title="Estate Reconciliation & Billing Reports">
-      <div className="space-y-6">
+      <div className="space-y-5">
         <p className="text-xs text-brand-accent/70 -mt-2">
-          Generate comprehensive waste-collection reconciliation statements sorted by street and property number. Formatted for the estate administration and official waste management contractors.
+          Monthly statement of collection compliance and outstanding dues for estate management and waste disposal contractors.
         </p>
 
-        <div className="rounded-sm border border-brand-accent/10 bg-brand-accent/[0.02] p-4 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand-primary">
-            Billing Period & Reconciliation Filters
-          </p>
+        <div className="rounded-sm border border-brand-accent/10 bg-white p-3.5 sm:p-4">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-brand-accent/60 uppercase tracking-wider mb-2.5">
+            <Filter size={14} className="text-brand-primary" />
+            <span>Select Billing Period & Scope</span>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className="block text-xs font-medium text-brand-accent/80 mb-1">
+              <label className="block text-[11px] font-medium text-brand-accent/60 mb-1">
                 Month
               </label>
               <DropdownUi
                 options={MONTH_OPTIONS}
                 value={month}
                 onChange={setMonth}
-                buttonClassName="bg-white"
+                buttonClassName="bg-stone-50 border-brand-accent/10"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-brand-accent/80 mb-1">
+              <label className="block text-[11px] font-medium text-brand-accent/60 mb-1">
                 Year
               </label>
               <DropdownUi
                 options={YEAR_OPTIONS}
                 value={year}
                 onChange={setYear}
-                buttonClassName="bg-white"
+                buttonClassName="bg-stone-50 border-brand-accent/10"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-brand-accent/80 mb-1">
+              <label className="block text-[11px] font-medium text-brand-accent/60 mb-1">
                 Street
               </label>
               <DropdownUi
                 options={streetOptions}
                 value={streetFilter}
                 onChange={setStreetFilter}
-                buttonClassName="bg-white"
+                buttonClassName="bg-stone-50 border-brand-accent/10"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-brand-accent/80 mb-1">
-                Status
-              </label>
-              <DropdownUi
-                options={STATUS_FILTER_OPTIONS}
-                value={statusFilter}
-                onChange={setStatusFilter}
-                buttonClassName="bg-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-brand-accent/80 mb-1">
-                Category
+              <label className="block text-[11px] font-medium text-brand-accent/60 mb-1">
+                Property Category
               </label>
               <DropdownUi
                 options={propertyTypeOptions}
                 value={propertyTypeFilter}
                 onChange={setPropertyTypeFilter}
-                buttonClassName="bg-white"
+                buttonClassName="bg-stone-50 border-brand-accent/10"
               />
             </div>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center p-8 text-sm text-brand-accent/60 gap-2">
-            <Loader2 className="size-4 animate-spin text-brand-primary" />
+          <div className="flex items-center justify-center p-12 text-sm text-brand-accent/60 gap-2">
+            <Loader2 className="size-5 animate-spin text-brand-primary" />
             Loading reconciliation records for {periodText}...
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-              <div className="rounded-sm border border-brand-accent/10 bg-white p-3">
-                <div className="flex items-center gap-1.5 text-xs text-brand-accent/60">
-                  <Users size={14} className="text-brand-primary shrink-0" />
-                  <span>Residents</span>
-                </div>
-                <p className="mt-1 text-lg font-bold text-brand-accent">
-                  {summary.totalResidents}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-sm border border-brand-accent/10 bg-white p-3.5">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-brand-accent/50">
+                  Total Expected
                 </p>
-                <p className="text-[10px] text-brand-accent/40">In current filter</p>
-              </div>
-
-              <div className="rounded-sm border border-emerald-200 bg-emerald-50/40 p-3">
-                <div className="flex items-center gap-1.5 text-xs text-emerald-800">
-                  <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
-                  <span>Paid</span>
-                </div>
-                <p className="mt-1 text-lg font-bold text-emerald-700">
-                  {summary.paidCount}
-                </p>
-                <p className="text-[10px] text-emerald-600/80">
-                  {summary.paidPercentage}% compliance
-                </p>
-              </div>
-
-              <div className="rounded-sm border border-rose-200 bg-rose-50/40 p-3">
-                <div className="flex items-center gap-1.5 text-xs text-rose-800">
-                  <XCircle size={14} className="text-rose-600 shrink-0" />
-                  <span>Unpaid</span>
-                </div>
-                <p className="mt-1 text-lg font-bold text-rose-700">
-                  {summary.unpaidCount}
-                </p>
-                <p className="text-[10px] text-rose-600/80">
-                  {summary.unpaidPercentage}% pending
-                </p>
-              </div>
-
-              <div className="rounded-sm border border-brand-accent/10 bg-white p-3">
-                <div className="flex items-center gap-1.5 text-xs text-brand-accent/60">
-                  <TrendingUp size={14} className="text-brand-accent/50 shrink-0" />
-                  <span>Expected</span>
-                </div>
-                <p className="mt-1 text-base font-bold text-brand-accent truncate">
+                <p className="mt-1 text-xl font-bold text-brand-accent truncate">
                   {formatCurrency(summary.totalExpected, "NGN")}
                 </p>
-                <p className="text-[10px] text-brand-accent/40">Total billed</p>
+                <p className="mt-0.5 text-[11px] text-brand-accent/50">
+                  {summary.totalResidents} properties billed
+                </p>
               </div>
 
-              <div className="rounded-sm border border-emerald-200 bg-emerald-50/40 p-3">
-                <div className="flex items-center gap-1.5 text-xs text-emerald-800">
-                  <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
-                  <span>Collected</span>
-                </div>
-                <p className="mt-1 text-base font-bold text-emerald-700 truncate">
+              <div className="rounded-sm border border-brand-accent/10 bg-white p-3.5">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-700">
+                  Settled Collections
+                </p>
+                <p className="mt-1 text-xl font-bold text-emerald-700 truncate">
                   {formatCurrency(summary.totalCollected, "NGN")}
                 </p>
-                <p className="text-[10px] text-emerald-600/80">Settled to estate</p>
+                <p className="mt-0.5 text-[11px] text-emerald-700/80">
+                  {summary.paidCount} properties paid
+                </p>
               </div>
 
-              <div className="rounded-sm border border-rose-200 bg-rose-50/40 p-3">
-                <div className="flex items-center gap-1.5 text-xs text-rose-800">
-                  <AlertCircle size={14} className="text-rose-600 shrink-0" />
-                  <span>Outstanding</span>
-                </div>
-                <p className="mt-1 text-base font-bold text-rose-700 truncate">
+              <div className="rounded-sm border border-brand-accent/10 bg-white p-3.5">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-rose-700">
+                  Outstanding Dues
+                </p>
+                <p className="mt-1 text-xl font-bold text-rose-700 truncate">
                   {formatCurrency(summary.totalOutstanding, "NGN")}
                 </p>
-                <p className="text-[10px] text-rose-600/80">Uncollected fees</p>
+                <p className="mt-0.5 text-[11px] text-rose-700/80">
+                  {summary.unpaidCount} properties unpaid
+                </p>
+              </div>
+
+              <div className="rounded-sm border border-brand-accent/10 bg-white p-3.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-brand-accent/50">
+                    Collection Rate
+                  </p>
+                  <span className="text-xs font-bold text-brand-accent">
+                    {summary.paidPercentage}%
+                  </span>
+                </div>
+                <div className="w-full bg-stone-100 rounded-full h-2 mt-2.5 overflow-hidden">
+                  <div
+                    className="bg-brand-primary h-full rounded-full transition-all duration-300"
+                    style={{ width: `${summary.paidPercentage}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 text-[11px] text-brand-accent/50">
+                  {summary.paidCount} of {summary.totalResidents} settled
+                </p>
               </div>
             </div>
 
-            <div className="rounded-sm border border-brand-accent/10 bg-white p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-accent">
-                  Quick Actions (One-Click Exports)
-                </h4>
-                <span className="text-xs text-brand-accent/50">
-                  {filteredRecords.length} properties matching filters
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="rounded-sm border border-brand-accent/10 bg-brand-accent/[0.02] p-3 space-y-2.5">
-                  <div>
-                    <p className="text-xs font-bold text-brand-accent">Full Billing Report</p>
-                    <p className="text-[11px] text-brand-accent/60">
-                      Complete report of all residents ({records.length}) with summary cards.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleFullReport("pdf")}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-sm bg-brand-primary px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-primary/95 cursor-pointer shadow-xs">
-                      <FileText size={13} /> PDF
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleFullReport("csv")}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-sm border border-brand-accent/15 bg-white px-2.5 py-1.5 text-xs font-medium text-brand-accent hover:bg-brand-accent/5 cursor-pointer">
-                      <FileSpreadsheet size={13} /> CSV
-                    </button>
-                  </div>
+            <div className="rounded-sm border border-brand-accent/10 bg-white overflow-hidden shadow-xs">
+              <div className="p-3 bg-stone-50 border-b border-brand-accent/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="inline-flex items-center rounded-sm bg-brand-accent/5 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter("all")}
+                    className={clsx(
+                      "px-3 py-1 text-xs font-semibold rounded-xs transition-all cursor-pointer",
+                      statusFilter === "all"
+                        ? "bg-white text-brand-accent shadow-xs"
+                        : "text-brand-accent/60 hover:text-brand-accent"
+                    )}>
+                    All ({allCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter("paid")}
+                    className={clsx(
+                      "px-3 py-1 text-xs font-semibold rounded-xs transition-all cursor-pointer",
+                      statusFilter === "paid"
+                        ? "bg-white text-emerald-800 shadow-xs"
+                        : "text-brand-accent/60 hover:text-brand-accent"
+                    )}>
+                    Paid ({paidCountTotal})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter("unpaid")}
+                    className={clsx(
+                      "px-3 py-1 text-xs font-semibold rounded-xs transition-all cursor-pointer",
+                      statusFilter === "unpaid"
+                        ? "bg-white text-rose-800 shadow-xs"
+                        : "text-brand-accent/60 hover:text-brand-accent"
+                    )}>
+                    Unpaid ({unpaidCountTotal})
+                  </button>
                 </div>
 
-                <div className="rounded-sm border border-rose-200 bg-rose-50/30 p-3 space-y-2.5">
-                  <div>
-                    <p className="text-xs font-bold text-rose-800">Export Unpaid Residents</p>
-                    <p className="text-[11px] text-rose-700/70">
-                      Street-sorted list of defaulters for waste collection cutoff / enforcement.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleExportUnpaid("pdf")}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-sm bg-rose-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 cursor-pointer shadow-xs">
-                      <FileText size={13} /> PDF
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleExportUnpaid("csv")}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-sm border border-rose-300 bg-white px-2.5 py-1.5 text-xs font-medium text-rose-800 hover:bg-rose-50 cursor-pointer">
-                      <FileSpreadsheet size={13} /> CSV
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-sm border border-emerald-200 bg-emerald-50/30 p-3 space-y-2.5">
-                  <div>
-                    <p className="text-xs font-bold text-emerald-800">Export Paid Residents</p>
-                    <p className="text-[11px] text-emerald-700/70">
-                      Street-sorted manifest of cleared properties for pickup stickers.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleExportPaid("pdf")}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-sm bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 cursor-pointer shadow-xs">
-                      <FileText size={13} /> PDF
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleExportPaid("csv")}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-sm border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-800 hover:bg-emerald-50 cursor-pointer">
-                      <FileSpreadsheet size={13} /> CSV
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-sm border border-brand-accent/10 bg-white overflow-hidden">
-              <div className="px-4 py-3 bg-brand-accent/[0.02] border-b border-brand-accent/10 flex items-center justify-between">
-                <span className="text-xs font-semibold text-brand-accent">
-                  Filtered Preview ({filteredRecords.length} properties)
-                </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleExportFilteredPdf}
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-sm bg-brand-primary text-white hover:bg-brand-primary/95 cursor-pointer">
-                    <Download size={13} /> Download Filtered PDF
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-sm bg-brand-primary text-white hover:bg-brand-primary/90 transition-colors cursor-pointer shadow-xs">
+                    <FileText size={14} />
+                    Export PDF
                   </button>
                   <button
                     type="button"
                     onClick={handleExportFilteredCsv}
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-sm border border-brand-accent/15 hover:bg-brand-accent/5 cursor-pointer">
-                    <FileSpreadsheet size={13} /> CSV
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-sm border border-brand-accent/15 bg-white text-brand-accent hover:bg-brand-accent/5 transition-colors cursor-pointer">
+                    <FileSpreadsheet size={14} />
+                    Export CSV
                   </button>
                 </div>
               </div>
 
-              <div className="max-h-56 overflow-y-auto">
+              <div className="max-h-64 overflow-y-auto">
                 {filteredRecords.length === 0 ? (
-                  <p className="p-6 text-center text-xs text-brand-accent/50">
+                  <p className="p-8 text-center text-xs text-brand-accent/50">
                     No resident properties match the selected filters.
                   </p>
                 ) : (
                   <table className="w-full text-left text-xs border-collapse">
-                    <thead className="bg-stone-50 border-b border-brand-accent/10 sticky top-0 text-[11px] font-semibold text-brand-accent/70">
+                    <thead className="bg-stone-50/80 border-b border-brand-accent/10 sticky top-0 text-[11px] font-semibold text-brand-accent/70">
                       <tr>
-                        <th className="py-2 px-3">Street</th>
-                        <th className="py-2 px-3">House #</th>
-                        <th className="py-2 px-3">Resident</th>
-                        <th className="py-2 px-3">Category</th>
-                        <th className="py-2 px-3 text-right">Expected</th>
-                        <th className="py-2 px-3 text-center">Status</th>
-                        <th className="py-2 px-3 text-right">Paid</th>
+                        <th className="py-2.5 px-3.5">Street</th>
+                        <th className="py-2.5 px-3">House / Plot</th>
+                        <th className="py-2.5 px-3.5">Resident</th>
+                        <th className="py-2.5 px-3">Category</th>
+                        <th className="py-2.5 px-3.5 text-right">Expected</th>
+                        <th className="py-2.5 px-3 text-center">Status</th>
+                        <th className="py-2.5 px-3.5 text-right">Paid</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-accent/8">
@@ -597,22 +388,22 @@ function ReconciliationReportModal({ isOpen, onClose, estateId }) {
                         <tr
                           key={row.id}
                           className="hover:bg-brand-accent/[0.015] transition-colors">
-                          <td className="py-2 px-3 font-medium text-brand-accent">
+                          <td className="py-2.5 px-3.5 font-medium text-brand-accent">
                             {row.street_name}
                           </td>
-                          <td className="py-2 px-3 text-brand-accent/70">
+                          <td className="py-2.5 px-3 text-brand-accent/70">
                             {row.house_number ? `House ${row.house_number}` : "-"}
                           </td>
-                          <td className="py-2 px-3 text-brand-accent">
+                          <td className="py-2.5 px-3.5 text-brand-accent">
                             {row.fullname}
                           </td>
-                          <td className="py-2 px-3 text-brand-accent/60">
+                          <td className="py-2.5 px-3 text-brand-accent/60">
                             {row.property_type_name}
                           </td>
-                          <td className="py-2 px-3 text-right text-brand-accent font-medium">
+                          <td className="py-2.5 px-3.5 text-right text-brand-accent font-medium">
                             {formatCurrency(row.expected_fee, "NGN")}
                           </td>
-                          <td className="py-2 px-3 text-center">
+                          <td className="py-2.5 px-3 text-center">
                             <span
                               className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                                 row.status === "Paid"
@@ -622,11 +413,11 @@ function ReconciliationReportModal({ isOpen, onClose, estateId }) {
                               {row.status}
                             </span>
                           </td>
-                          <td className="py-2 px-3 text-right font-medium">
+                          <td className="py-2.5 px-3.5 text-right font-medium">
                             <span
                               className={
                                 row.status === "Paid"
-                                  ? "text-emerald-700"
+                                  ? "text-emerald-700 font-semibold"
                                   : "text-brand-accent/40"
                               }>
                               {formatCurrency(row.paid_amount, "NGN")}
@@ -642,11 +433,14 @@ function ReconciliationReportModal({ isOpen, onClose, estateId }) {
           </>
         )}
 
-        <div className="flex items-center justify-end pt-2 border-t border-brand-accent/10">
+        <div className="flex items-center justify-between pt-2 border-t border-brand-accent/10 text-xs text-brand-accent/50">
+          <span>
+            {periodText} • {summary.totalResidents} properties in current view
+          </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm rounded-sm border border-brand-accent/15 text-brand-accent hover:bg-brand-accent/5 cursor-pointer">
+            className="px-4 py-2 text-xs font-semibold rounded-sm border border-brand-accent/15 text-brand-accent hover:bg-brand-accent/5 transition-colors cursor-pointer">
             Close
           </button>
         </div>
