@@ -453,7 +453,7 @@ export function downloadCsv(
 }
 
 export async function shareReceiptLink(receiptId) {
-  const shareUrl = `${window.location.origin}/receipts/${receiptId}`;
+  const shareUrl = `${window.location.origin}/app/receipts/${receiptId}`;
 
   if (navigator.share) {
     try {

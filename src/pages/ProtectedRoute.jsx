@@ -23,7 +23,7 @@ function ProtectedRoute({ isAuthenticated, allowedRole }) {
     if (user.role === "admin") {
       return <Navigate to="/admin" replace />;
     }
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   return <Outlet />;

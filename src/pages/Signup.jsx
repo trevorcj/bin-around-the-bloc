@@ -31,7 +31,7 @@ function Signup() {
   const [selectedPropertyTypeId, setSelectedPropertyTypeId] = useState("");
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   const inputErrorClasses = "text-sm text-red-500";
@@ -114,7 +114,7 @@ function Signup() {
 
       await registerUser(payload);
       showToast("success", "Account successfully created!");
-      navigate("/");
+      navigate("/app");
     } catch (err) {
       showToast("error", err.message || "Could not complete registration.");
     }

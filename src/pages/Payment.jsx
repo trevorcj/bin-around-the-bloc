@@ -253,7 +253,7 @@ function Payment() {
     setIsSubmitting(false);
     const receiptKey =
       createdPayment?.receiptid || createdPayment?.id || refString;
-    navigate(`/receipts/${receiptKey}`);
+    navigate(`/app/receipts/${receiptKey}`);
   }
 
   function handleClose() {
@@ -452,7 +452,7 @@ function Payment() {
                 </div>
 
                 <Link
-                  to={paidReceiptId ? `/receipts/${paidReceiptId}` : "/receipts"}
+                  to={paidReceiptId ? `/app/receipts/${paidReceiptId}` : "/app/receipts"}
                   className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-sm bg-white text-brand-accent font-semibold text-xs border border-brand-accent/10 hover:bg-stone-50 transition-colors shadow-xs self-start sm:self-auto">
                   View Receipt <ArrowUpRight size={14} />
                 </Link>
@@ -572,7 +572,7 @@ function Payment() {
               Contact your estate administrator or support team if your assigned property tier or fee schedule is incorrect.
             </p>
             <Link
-              to="/support"
+              to="/app/support"
               className="mt-4 inline-flex w-full items-center justify-center rounded-sm border border-brand-accent/10 px-4 py-2.5 text-xs font-semibold text-brand-accent transition-colors hover:bg-brand-accent/4">
               Contact Support
             </Link>

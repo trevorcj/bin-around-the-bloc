@@ -131,7 +131,7 @@ function History() {
   }
 
   function handleRowClick(receiptId) {
-    navigate(`/receipts/${receiptId}`);
+    navigate(`/app/receipts/${receiptId}`);
   }
 
   function handleRowKeyDown(event, receiptId) {

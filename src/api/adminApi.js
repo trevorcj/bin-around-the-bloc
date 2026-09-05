@@ -108,6 +108,7 @@ export async function getEstateResidents(estateId, {
   search = "",
   streetId = "all",
   propertyTypeId = "all",
+  status = "all",
   page = 1,
   limit = 10,
 } = {}) {
@@ -132,6 +133,10 @@ export async function getEstateResidents(estateId, {
     `, { count: "exact" })
     .eq("estate_id", estateId)
     .eq("role", "resident");
+
+  if (status && status !== "all") {
+    query = query.ilike("status", status);
+  }
 
   if (streetId && streetId !== "all") {
     query = query.eq("street_id", streetId);
@@ -238,6 +243,121 @@ export async function updateResidentOpeningBalance(residentId, balance) {
     .from("profiles")
     .update({ opening_balance: num })
     .eq("id", residentId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function updateResidentDetails(estateId, residentId, {
+  fullname,
+  phone,
+  email,
+  street_id,
+  housenumber,
+  apartment,
+  property_type_id,
+}) {
+  if (!estateId || !residentId) throw new Error("Missing estate or resident ID.");
+
+  const { data: resident, error: resErr } = await supabase
+    .from("profiles")
+    .select("id, estate_id, role")
+    .eq("id", residentId)
+    .eq("estate_id", estateId)
+    .eq("role", "resident")
+    .single();
+
+  if (resErr || !resident) {
+    throw new Error("Resident not found or unauthorized for this estate.");
+  }
+
+  let streetname = null;
+  if (street_id) {
+    const { data: street, error: streetErr } = await supabase
+      .from("streets")
+      .select("id, name")
+      .eq("id", street_id)
+      .eq("estate_id", estateId)
+      .single();
+
+    if (streetErr || !street) {
+      throw new Error("Selected street does not belong to this estate.");
+    }
+    streetname = street.name;
+  }
+
+  let property_type_name = null;
+  if (property_type_id) {
+    const { data: propType, error: propErr } = await supabase
+      .from("property_types")
+      .select("id, name")
+      .eq("id", property_type_id)
+      .eq("estate_id", estateId)
+      .single();
+
+    if (propErr || !propType) {
+      throw new Error("Selected property type does not belong to this estate.");
+    }
+    property_type_name = propType.name;
+  }
+
+  const updates = {};
+  if (fullname !== undefined) updates.fullname = fullname.trim();
+  if (phone !== undefined) updates.phone = phone.trim();
+  if (email !== undefined) updates.email = email.trim().toLowerCase();
+  if (housenumber !== undefined) updates.housenumber = housenumber.trim();
+  if (apartment !== undefined) updates.apartment = apartment ? apartment.trim() : null;
+  if (street_id !== undefined) {
+    updates.street_id = street_id;
+    if (streetname) updates.streetname = streetname;
+  }
+  if (property_type_id !== undefined) {
+    updates.property_type_id = property_type_id;
+    if (property_type_name) updates.property_type_name = property_type_name;
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(updates)
+    .eq("id", residentId)
+    .eq("estate_id", estateId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function updateResidentStatus(estateId, residentId, status) {
+  if (!estateId || !residentId) throw new Error("Missing estate or resident ID.");
+
+  const { data: resident, error: resErr } = await supabase
+    .from("profiles")
+    .select("id, estate_id, role")
+    .eq("id", residentId)
+    .eq("estate_id", estateId)
+    .eq("role", "resident")
+    .single();
+
+  if (resErr || !resident) {
+    throw new Error("Resident not found or unauthorized for this estate.");
+  }
+
+  const cleanStatus = status === "Inactive" ? "Inactive" : "Active";
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ status: cleanStatus })
+    .eq("id", residentId)
+    .eq("estate_id", estateId)
     .select()
     .single();
 
@@ -606,7 +726,7 @@ export async function getEstateReconciliation(estateId, { month, year }) {
         .order("fee", { ascending: true }),
       supabase
         .from("profiles")
-        .select("id, fullname, email, phone, housenumber, streetname, street_id, property_type_id, property_type_name")
+        .select("id, fullname, email, phone, housenumber, streetname, street_id, property_type_id, property_type_name, status")
         .eq("estate_id", estateId)
         .eq("role", "resident"),
       supabase
@@ -655,7 +775,12 @@ export async function getEstateReconciliation(estateId, { month, year }) {
     propertyTypeMap[pt.id] = pt;
   });
 
-  const records = residents.map((r) => {
+  const activeOrRelevantResidents = residents.filter((r) => {
+    const hasActivity = Boolean(paymentMap[r.id]) || Boolean(billMap[r.id]);
+    return r.status !== "Inactive" || hasActivity;
+  });
+
+  const records = activeOrRelevantResidents.map((r) => {
     const matchedStreet = r.street_id ? streetMap[r.street_id] : null;
     const streetName = r.streetname || matchedStreet || "Unassigned Street";
 

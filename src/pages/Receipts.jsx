@@ -116,11 +116,11 @@ function Receipts() {
   });
 
   function openReceipt(receiptId) {
-    navigate(`/receipts/${receiptId}`);
+    navigate(`/app/receipts/${receiptId}`);
   }
 
   function closeReceipt() {
-    navigate("/receipts");
+    navigate("/app/receipts");
   }
 
   function toggleReceiptOptions(event, receiptId) {

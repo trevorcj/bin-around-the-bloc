@@ -120,7 +120,7 @@ function DashboardGrid({ user: propUser }) {
               )}
             </div>
             {totalOutstanding > 0 ? (
-              <Link to="/payment">
+              <Link to="/app/payment">
                 <span className="inline-flex items-center gap-1 rounded-sm bg-brand-accent px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-accent/90">
                   Pay bill <ArrowUpRight size={14} />
                 </span>
@@ -156,7 +156,7 @@ function DashboardGrid({ user: propUser }) {
             <div className="flex h-11 w-11 items-center justify-center rounded-sm bg-brand-primary/10 text-brand-primary">
               <Building2 size={22} />
             </div>
-            <Link to="/payment">
+            <Link to="/app/payment">
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-accent hover:underline">
                 Make payment <ArrowUpRight size={14} />
               </span>
@@ -186,7 +186,7 @@ function DashboardGrid({ user: propUser }) {
             <div className="flex h-11 w-11 items-center justify-center rounded-sm bg-brand-secondary/15 text-brand-secondary">
               <BanknoteArrowUp size={22} />
             </div>
-            <Link to="/history">
+            <Link to="/app/history">
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-accent hover:underline">
                 All receipts <ArrowUpRight size={14} />
               </span>
@@ -231,7 +231,7 @@ function DashboardGrid({ user: propUser }) {
             </div>
           </div>
           <Link
-            to="/payment"
+            to="/app/payment"
             className="inline-flex items-center justify-center gap-1.5 rounded-sm bg-amber-900 px-4 py-2 text-xs font-medium text-white hover:bg-amber-950 self-start sm:self-auto shrink-0">
             Settle Outstanding Bills <ArrowUpRight size={14} />
           </Link>
@@ -247,7 +247,7 @@ function DashboardGrid({ user: propUser }) {
         renderRow={(row) => (
           <tr
             key={row.id || row.receiptid}
-            onClick={() => navigate(`/receipts/${row.receiptid || row.id}`)}
+            onClick={() => navigate(`/app/receipts/${row.receiptid || row.id}`)}
             className="border-b border-brand-accent/8 transition-colors last:border-b-0 hover:bg-brand-accent/[0.018] cursor-pointer">
             <th
               scope="row"
@@ -306,7 +306,7 @@ function DashboardGrid({ user: propUser }) {
           return (
             <article
               key={row.id || row.receiptid}
-              onClick={() => navigate(`/receipts/${row.receiptid || row.id}`)}
+              onClick={() => navigate(`/app/receipts/${row.receiptid || row.id}`)}
               className="space-y-3 p-4 cursor-pointer">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -345,7 +345,7 @@ function DashboardGrid({ user: propUser }) {
         }}
         actions={
           <Link
-            to="/history"
+            to="/app/history"
             className="inline-flex items-center gap-1 rounded-sm border border-brand-accent/10 px-3 py-1.5 text-xs font-medium text-brand-accent transition-colors hover:bg-brand-accent/5">
             View all
           </Link>

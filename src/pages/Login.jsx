@@ -16,7 +16,7 @@ function Login() {
     if (user.role === "admin") {
       return <Navigate to="/admin" replace />;
     }
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   async function onSubmit({ email, password }) {
@@ -28,7 +28,7 @@ function Login() {
       if (loggedInUser?.role === "admin") {
         navigate("/admin");
       } else {
-        navigate("/");
+        navigate("/app");
       }
     } catch (err) {
       showToast("error", err.message || "Failed to sign in. Check your credentials.");

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ChevronRight, Download } from "lucide-react";
+import { Search, ChevronRight, Download, Pencil, UserX, UserCheck } from "lucide-react";
 import clsx from "clsx";
 import useAuth from "../../hooks/useAuth";
 import {
@@ -13,6 +13,8 @@ import Table from "../../ui/Table";
 import DropdownUi from "../../ui/DropdownUi";
 import Pagination from "../../ui/Pagination";
 import AdminResidentDetailModal from "./AdminResidentDetailModal";
+import EditResidentModal from "./EditResidentModal";
+import DeactivateResidentModal from "./DeactivateResidentModal";
 import formatCurrency from "../../utils/formatCurrency";
 import useDebounce from "../../hooks/useDebounce";
 import { downloadCsv } from "../../utils/receiptUtils";
@@ -24,7 +26,7 @@ const RESIDENT_COLUMNS = [
   { key: "category", label: "Category" },
   { key: "outstanding", label: "Balance", align: "right" },
   { key: "status", label: "Status" },
-  { key: "action", label: "", className: "w-10 text-right" },
+  { key: "action", label: "Actions", align: "right" },
 ];
 
 function AdminResidents() {
@@ -34,8 +36,11 @@ function AdminResidents() {
   const [search, setSearch] = useState("");
   const [selectedStreetId, setSelectedStreetId] = useState("all");
   const [selectedPropertyTypeId, setSelectedPropertyTypeId] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedResidentId, setSelectedResidentId] = useState(null);
+  const [editingResident, setEditingResident] = useState(null);
+  const [deactivatingResident, setDeactivatingResident] = useState(null);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -58,6 +63,7 @@ function AdminResidents() {
       debouncedSearch,
       selectedStreetId,
       selectedPropertyTypeId,
+      selectedStatus,
       currentPage,
     ],
     queryFn: () =>
@@ -65,6 +71,7 @@ function AdminResidents() {
         search: debouncedSearch,
         streetId: selectedStreetId,
         propertyTypeId: selectedPropertyTypeId,
+        status: selectedStatus,
         page: currentPage,
         limit: 10,
       }),
@@ -84,6 +91,12 @@ function AdminResidents() {
   const propertyTypeOptions = [
     { label: "All Property Types", value: "all" },
     ...propertyTypes.map((pt) => ({ label: pt.name, value: pt.id })),
+  ];
+
+  const statusOptions = [
+    { label: "All Status", value: "all" },
+    { label: "Active", value: "Active" },
+    { label: "Inactive", value: "Inactive" },
   ];
 
   function handleExportCsv() {
@@ -124,7 +137,7 @@ function AdminResidents() {
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-center gap-3 bg-white p-4 border border-brand-accent/10 rounded-sm">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <Search
             size={18}
             className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-brand-accent/40"
@@ -141,7 +154,7 @@ function AdminResidents() {
           />
         </div>
 
-        <div className="w-full lg:w-48 min-w-0">
+        <div className="w-full lg:w-44 min-w-0">
           <DropdownUi
             options={streetOptions}
             value={selectedStreetId}
@@ -153,12 +166,24 @@ function AdminResidents() {
           />
         </div>
 
-        <div className="w-full lg:w-48 min-w-0">
+        <div className="w-full lg:w-44 min-w-0">
           <DropdownUi
             options={propertyTypeOptions}
             value={selectedPropertyTypeId}
             onChange={(val) => {
               setSelectedPropertyTypeId(val);
+              setCurrentPage(1);
+            }}
+            buttonClassName="bg-white"
+          />
+        </div>
+
+        <div className="w-full lg:w-36 min-w-0">
+          <DropdownUi
+            options={statusOptions}
+            value={selectedStatus}
+            onChange={(val) => {
+              setSelectedStatus(val);
               setCurrentPage(1);
             }}
             buttonClassName="bg-white"
@@ -238,14 +263,49 @@ function AdminResidents() {
                   "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
                   row.status === "Active"
                     ? "bg-status-success/10 text-status-success"
-                    : "bg-brand-accent/10 text-brand-accent"
+                    : "bg-stone-200 text-stone-600"
                 )}>
                 {row.status}
               </span>
             </td>
 
-            <td className="px-6 py-4 text-right text-brand-accent/40 group-hover:text-brand-accent">
-              <ChevronRight size={18} />
+            <td className="px-6 py-4 text-right">
+              <div
+                className="flex items-center justify-end gap-1"
+                onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  title="Edit Resident"
+                  onClick={() => setEditingResident(row)}
+                  className="p-1.5 text-brand-accent/60 hover:text-brand-primary hover:bg-brand-accent/5 rounded-sm transition-colors cursor-pointer">
+                  <Pencil size={15} />
+                </button>
+
+                <button
+                  type="button"
+                  title={row.status === "Active" ? "Deactivate Resident" : "Reactivate Resident"}
+                  onClick={() => setDeactivatingResident(row)}
+                  className={clsx(
+                    "p-1.5 rounded-sm transition-colors cursor-pointer",
+                    row.status === "Active"
+                      ? "text-brand-accent/60 hover:text-status-error hover:bg-status-error/10"
+                      : "text-brand-accent/60 hover:text-status-success hover:bg-status-success/10"
+                  )}>
+                  {row.status === "Active" ? (
+                    <UserX size={15} />
+                  ) : (
+                    <UserCheck size={15} />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  title="View Profile & Ledgers"
+                  onClick={() => setSelectedResidentId(row.id)}
+                  className="p-1.5 text-brand-accent/40 group-hover:text-brand-accent hover:bg-brand-accent/5 rounded-sm transition-colors cursor-pointer">
+                  <ChevronRight size={17} />
+                </button>
+              </div>
             </td>
           </tr>
         )}
@@ -264,7 +324,7 @@ function AdminResidents() {
                   "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
                   row.status === "Active"
                     ? "bg-status-success/10 text-status-success"
-                    : "bg-brand-accent/10 text-brand-accent"
+                    : "bg-stone-200 text-stone-600"
                 )}>
                 {row.status}
               </span>
@@ -284,16 +344,64 @@ function AdminResidents() {
                 {formatCurrency(row.totalOutstanding || 0, "NGN")}
               </span>
             </div>
+
+            <div
+              className="flex items-center justify-end gap-2 pt-1 border-t border-brand-accent/5"
+              onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setEditingResident(row)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-brand-primary hover:underline cursor-pointer py-1 px-2">
+                <Pencil size={13} /> Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDeactivatingResident(row)}
+                className={clsx(
+                  "inline-flex items-center gap-1 text-xs font-medium hover:underline cursor-pointer py-1 px-2",
+                  row.status === "Active"
+                    ? "text-status-error"
+                    : "text-status-success"
+                )}>
+                {row.status === "Active" ? (
+                  <>
+                    <UserX size={13} /> Deactivate
+                  </>
+                ) : (
+                  <>
+                    <UserCheck size={13} /> Reactivate
+                  </>
+                )}
+              </button>
+            </div>
           </article>
         )}
       />
 
-      {/* Detail Modal */}
       {selectedResidentId && (
         <AdminResidentDetailModal
           isOpen={!!selectedResidentId}
           onClose={() => setSelectedResidentId(null)}
           residentId={selectedResidentId}
+        />
+      )}
+
+      {editingResident && (
+        <EditResidentModal
+          isOpen={!!editingResident}
+          onClose={() => setEditingResident(null)}
+          resident={editingResident}
+          estateId={estateId}
+        />
+      )}
+
+      {deactivatingResident && (
+        <DeactivateResidentModal
+          isOpen={!!deactivatingResident}
+          onClose={() => setDeactivatingResident(null)}
+          resident={deactivatingResident}
+          estateId={estateId}
         />
       )}
     </div>

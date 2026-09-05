@@ -39,7 +39,7 @@ function InputUi({
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
-              className="absolute right-3 text-brand-accent/60 hover:text-brand-accent transition-colors focus:outline-none cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-brand-accent/60 hover:text-brand-accent transition-colors focus:outline-none cursor-pointer"
               aria-label={showPassword ? "Hide password" : "Show password"}>
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>

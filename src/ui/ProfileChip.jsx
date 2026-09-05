@@ -15,7 +15,7 @@ function ProfileChip({ user }) {
 
   return (
     <Link
-      to="/settings"
+      to="/app/settings"
       className="inline-flex items-center gap-3 rounded-full bg-white text-left text-brand-accent transition-colors ">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-accent text-sm font-semibold text-white">
         {initials}

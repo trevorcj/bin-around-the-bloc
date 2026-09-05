@@ -125,8 +125,6 @@ export default async function handler(req, res) {
 
       if (createData.status && createData.data?.subaccount_code) {
         subaccountCode = createData.data.subaccount_code;
-      } else if (secretKey.startsWith("sk_test_")) {
-        subaccountCode = `ACCT_TEST_${estate.id.replace(/-/g, "").slice(0, 10)}`;
       } else {
         throw new Error(createData.message || "Failed to create Paystack subaccount.");
       }

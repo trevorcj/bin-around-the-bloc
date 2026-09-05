@@ -74,7 +74,7 @@ function Sidebar({ user: propUser }) {
         aria-label="Sidebar">
         <div className="flex h-full min-h-0 flex-col overflow-y-auto border-r border-brand-accent/10 py-4">
           <Link
-            to="/"
+            to="/app"
             onClick={() => setOpenSidebar(false)}
             className="flex items-center ps-5.5 mt-2 pb-4 mb-5 border-b border-b-brand-accent/10">
             <img
@@ -87,7 +87,7 @@ function Sidebar({ user: propUser }) {
             <div className="space-y-3">
               <li>
                 <NavLink
-                  to="/"
+                  to="/app"
                   end
                   onClick={closeMobileSidebar}
                   className={({ isActive }) =>
@@ -115,7 +115,7 @@ function Sidebar({ user: propUser }) {
 
               <li>
                 <NavLink
-                  to="/payment"
+                  to="/app/payment"
                   onClick={closeMobileSidebar}
                   className={({ isActive }) =>
                     `flex items-center px-2 py-1.5 rounded-sm hover:text-white duration-300 transition ease-in-out ${isActive ? "text-white hover:text-white" : "text-white/70"}`
@@ -145,7 +145,7 @@ function Sidebar({ user: propUser }) {
 
               <li>
                 <NavLink
-                  to="/history"
+                  to="/app/history"
                   onClick={closeMobileSidebar}
                   className={({ isActive }) =>
                     `flex items-center px-2 py-1.5 rounded-sm hover:text-white duration-300 transition ease-in-out ${
@@ -187,7 +187,7 @@ function Sidebar({ user: propUser }) {
 
               <li>
                 <NavLink
-                  to="/receipts"
+                  to="/app/receipts"
                   onClick={closeMobileSidebar}
                   className={({ isActive }) =>
                     `flex items-center px-2 py-1.5 rounded-sm hover:text-white duration-300 transition ease-in-out ${isActive ? "text-white hover:text-white" : "text-white/70"}`
@@ -206,7 +206,7 @@ function Sidebar({ user: propUser }) {
                     <path d="M13 16H8" />
                     <path d="M14 8H8" />
                     <path d="M16 12H8" />
-                    <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" />
+                    <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l.934-.6a1.3 1.3 0 0 0 1.4 0l.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" />
                   </svg>
                   <span className="flex-1 ms-3 whitespace-nowrap">
                     Receipts
@@ -216,7 +216,7 @@ function Sidebar({ user: propUser }) {
 
               <li>
                 <NavLink
-                  to="/support"
+                  to="/app/support"
                   onClick={closeMobileSidebar}
                   className={({ isActive }) =>
                     `flex items-center px-2 py-1.5 rounded-sm hover:text-white duration-300 transition ease-in-out ${isActive ? "text-white hover:text-white" : "text-white/70"}`
@@ -260,7 +260,7 @@ function Sidebar({ user: propUser }) {
               )}
               <li>
                 <NavLink
-                  to="/settings"
+                  to="/app/settings"
                   onClick={closeMobileSidebar}
                   className={({ isActive }) =>
                     `flex items-center px-2 py-1.5 rounded-sm hover:text-white duration-300 transition ease-in-out ${isActive ? "text-white hover:text-white" : "text-white/70"}`

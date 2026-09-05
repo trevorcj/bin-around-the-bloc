@@ -1,9 +1,10 @@
 import { Toaster } from "react-hot-toast";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate, useParams } from "react-router-dom";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import useAuth from "./hooks/useAuth.js";
 
+import Home from "./pages/Home.jsx";
 import Layout from "./ui/Layout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login.jsx";
@@ -20,6 +21,11 @@ import AdminOverview from "./pages/admin/AdminOverview.jsx";
 import AdminResidents from "./pages/admin/AdminResidents.jsx";
 import AdminPayments from "./pages/admin/AdminPayments.jsx";
 import AdminSettings from "./pages/admin/AdminSettings.jsx";
+
+function ReceiptParamRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/app/receipts/${id}`} replace />;
+}
 
 function App() {
   const { isAuthenticated, user, userLoading } = useAuth();
@@ -42,21 +48,29 @@ function App() {
       <ReactQueryDevtools initialIsOpen={false} />
 
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin/signup" element={<AdminSignup />} />
 
         <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="resident" />}>
-          <Route path="/" element={<Layout user={user} />}>
+          <Route path="/app" element={<Layout user={user} />}>
             <Route index element={<Dashboard user={user} />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/receipts" element={<Receipts />} />
-            <Route path="/receipts/:id" element={<Receipts />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="payment" element={<Payment />} />
+            <Route path="history" element={<History />} />
+            <Route path="receipts" element={<Receipts />} />
+            <Route path="receipts/:id" element={<Receipts />} />
+            <Route path="support" element={<Support />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
+
+        <Route path="/payment" element={<Navigate to="/app/payment" replace />} />
+        <Route path="/history" element={<Navigate to="/app/history" replace />} />
+        <Route path="/receipts" element={<Navigate to="/app/receipts" replace />} />
+        <Route path="/receipts/:id" element={<ReceiptParamRedirect />} />
+        <Route path="/support" element={<Navigate to="/app/support" replace />} />
+        <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
 
         <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="admin" />}>
           <Route path="/admin" element={<AdminLayout />}>
@@ -66,10 +80,11 @@ function App() {
             <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
 }
 
 export default App;
-
