@@ -521,3 +521,212 @@ export async function updateEstateSettings(estateId, updates) {
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function getNigerianBanks() {
+  const res = await fetch("/api/banks");
+  const json = await res.json();
+  if (!json.status) {
+    throw new Error(json.error || json.message || "Failed to load banks list.");
+  }
+  return json.data || [];
+}
+
+export async function resolveBankAccount(accountNumber, bankCode) {
+  const res = await fetch("/api/resolve-account", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      account_number: accountNumber,
+      bank_code: bankCode,
+    }),
+  });
+
+  const json = await res.json();
+  if (!json.status) {
+    throw new Error(json.message || "Could not verify this bank account.");
+  }
+
+  return json.data;
+}
+
+export async function connectPayoutAccount(payload) {
+  const res = await fetch("/api/subaccount", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!json.status) {
+    throw new Error(json.message || "Failed to connect payout account.");
+  }
+
+  return json;
+}
+
+export async function getEstatePayoutAccount(estateId) {
+  if (!estateId) return null;
+
+  const { data, error } = await supabase
+    .from("estates")
+    .select(`
+      id,
+      name,
+      code,
+      paystack_subaccount_code,
+      payout_account_status,
+      payout_bank_code,
+      payout_bank_name,
+      payout_account_number,
+      payout_account_name,
+      payout_account_updated_at
+    `)
+    .eq("id", estateId)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function getEstateReconciliation(estateId, { month, year }) {
+  if (!estateId) return { estate: null, streets: [], propertyTypes: [], records: [] };
+
+  const [estateRes, streetsRes, propertyTypesRes, residentsRes, paymentsRes, billsRes] =
+    await Promise.all([
+      supabase.from("estates").select("id, name, code").eq("id", estateId).maybeSingle(),
+      supabase
+        .from("streets")
+        .select("id, name")
+        .eq("estate_id", estateId)
+        .order("name", { ascending: true }),
+      supabase
+        .from("property_types")
+        .select("id, name, fee")
+        .eq("estate_id", estateId)
+        .order("fee", { ascending: true }),
+      supabase
+        .from("profiles")
+        .select("id, fullname, email, phone, housenumber, streetname, street_id, property_type_id, property_type_name")
+        .eq("estate_id", estateId)
+        .eq("role", "resident"),
+      supabase
+        .from("payments")
+        .select("id, resident_id, amount, status, paymentMethod, reference, receiptid, createdat")
+        .eq("estate_id", estateId)
+        .ilike("month", month)
+        .eq("year", String(year))
+        .eq("status", "Successful"),
+      supabase
+        .from("bills")
+        .select("id, resident_id, amount, status, paid_at")
+        .eq("estate_id", estateId)
+        .ilike("month", month)
+        .eq("year", String(year)),
+    ]);
+
+  const estate = estateRes.data || null;
+  const streets = streetsRes.data || [];
+  const propertyTypes = propertyTypesRes.data || [];
+  const residents = residentsRes.data || [];
+  const payments = paymentsRes.data || [];
+  const bills = billsRes.data || [];
+
+  const paymentMap = {};
+  payments.forEach((p) => {
+    if (p.resident_id) {
+      paymentMap[p.resident_id] = p;
+    }
+  });
+
+  const billMap = {};
+  bills.forEach((b) => {
+    if (b.resident_id) {
+      billMap[b.resident_id] = b;
+    }
+  });
+
+  const streetMap = {};
+  streets.forEach((s) => {
+    streetMap[s.id] = s.name;
+  });
+
+  const propertyTypeMap = {};
+  propertyTypes.forEach((pt) => {
+    propertyTypeMap[pt.id] = pt;
+  });
+
+  const records = residents.map((r) => {
+    const matchedStreet = r.street_id ? streetMap[r.street_id] : null;
+    const streetName = r.streetname || matchedStreet || "Unassigned Street";
+
+    let expectedFee = 5000;
+    let categoryName = r.property_type_name || "Standard";
+
+    if (r.property_type_id && propertyTypeMap[r.property_type_id]) {
+      expectedFee = Number(propertyTypeMap[r.property_type_id].fee) || 5000;
+      categoryName = propertyTypeMap[r.property_type_id].name;
+    } else if (r.property_type_name) {
+      const found = propertyTypes.find(
+        (pt) => pt.name.toLowerCase() === r.property_type_name.toLowerCase()
+      );
+      if (found) {
+        expectedFee = Number(found.fee) || 5000;
+        categoryName = found.name;
+      }
+    }
+
+    const p = paymentMap[r.id];
+    const b = billMap[r.id];
+    const isPaid = Boolean(p) || b?.status === "Paid";
+    const paidAmount = p ? Number(p.amount) : b?.status === "Paid" ? Number(b.amount) : 0;
+    const method = p?.paymentMethod || (b?.status === "Paid" ? "Manual Bill" : "-");
+    const ref = p?.reference || p?.receiptid || "-";
+    const paidDate = p?.createdat || b?.paid_at || null;
+
+    return {
+      id: r.id,
+      resident_id: r.id,
+      fullname: r.fullname || "Resident",
+      email: r.email || "",
+      phone: r.phone || "",
+      street_id: r.street_id || "",
+      street_name: streetName,
+      house_number: r.housenumber || "",
+      property_type_id: r.property_type_id || "",
+      property_type_name: categoryName,
+      expected_fee: expectedFee,
+      status: isPaid ? "Paid" : "Unpaid",
+      paid_amount: paidAmount,
+      payment_method: method,
+      reference: ref,
+      paid_at: paidDate,
+    };
+  });
+
+  function parseHouseNumber(val) {
+    const match = String(val || "").trim().match(/^\d+/);
+    return match ? parseInt(match[0], 10) : 999999;
+  }
+
+  records.sort((a, b) => {
+    const streetCompare = a.street_name.localeCompare(b.street_name);
+    if (streetCompare !== 0) return streetCompare;
+
+    const numA = parseHouseNumber(a.house_number);
+    const numB = parseHouseNumber(b.house_number);
+    if (numA !== numB) return numA - numB;
+
+    return String(a.house_number || "").localeCompare(
+      String(b.house_number || ""),
+      undefined,
+      { numeric: true, sensitivity: "base" }
+    );
+  });
+
+  return {
+    estate,
+    streets,
+    propertyTypes,
+    records,
+  };
+}

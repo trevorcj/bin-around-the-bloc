@@ -13,6 +13,7 @@ import formatCurrency from "../../utils/formatCurrency";
 import formatDate from "../../utils/formatDate";
 import useDebounce from "../../hooks/useDebounce";
 import { downloadReceipt, downloadCsv } from "../../utils/receiptUtils";
+import ReconciliationReportModal from "./ReconciliationReportModal";
 
 const PAYMENT_COLUMNS = [
   { key: "resident", label: "Resident / Address" },
@@ -68,6 +69,7 @@ function AdminPayments() {
   const [month, setMonth] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -129,12 +131,21 @@ function AdminPayments() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsRecordModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-sm bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-brand-primary/95 transition-colors cursor-pointer self-start sm:self-auto">
-          <Plus size={18} /> Record External Payment
-        </button>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setIsReportModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-sm border border-brand-accent/15 bg-white px-4 py-2.5 text-sm font-semibold text-brand-accent shadow-xs hover:bg-brand-accent/5 transition-colors cursor-pointer">
+            <FileText size={18} /> Reconciliation Reports
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsRecordModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-sm bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-brand-primary/95 transition-colors cursor-pointer">
+            <Plus size={18} /> Record External Payment
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-center gap-3 bg-white p-4 border border-brand-accent/10 rounded-sm">
@@ -179,12 +190,20 @@ function AdminPayments() {
           />
         </div>
 
-        <button
-          type="button"
-          onClick={handleExportCsv}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-sm border border-brand-accent/10 px-4 text-sm font-medium text-brand-accent hover:bg-brand-accent/5 transition-colors cursor-pointer shrink-0">
-          <Download size={16} /> Export
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsReportModalOpen(true)}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-sm border border-brand-accent/10 px-4 text-sm font-medium text-brand-accent hover:bg-brand-accent/5 transition-colors cursor-pointer">
+            <FileText size={16} /> Reports
+          </button>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-sm border border-brand-accent/10 px-4 text-sm font-medium text-brand-accent hover:bg-brand-accent/5 transition-colors cursor-pointer">
+            <Download size={16} /> Export
+          </button>
+        </div>
       </div>
 
       <Table
@@ -294,10 +313,15 @@ function AdminPayments() {
         )}
       />
 
-      {/* Record Payment Modal */}
       <RecordPaymentModal
         isOpen={isRecordModalOpen}
         onClose={() => setIsRecordModalOpen(false)}
+        estateId={estateId}
+      />
+
+      <ReconciliationReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
         estateId={estateId}
       />
     </div>

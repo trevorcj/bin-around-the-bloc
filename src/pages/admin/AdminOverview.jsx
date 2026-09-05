@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import clsx from "clsx";
 import useAuth from "../../hooks/useAuth";
-import { getEstateOverview } from "../../api/adminApi";
+import { getEstateOverview, getEstateSettings } from "../../api/adminApi";
 import { StyledH1 } from "../../styles/CommonStyles";
 import Table from "../../ui/Table";
+import PayoutAccountModal from "./PayoutAccountModal";
 import formatCurrency from "../../utils/formatCurrency";
 import formatDate from "../../utils/formatDate";
 import showToast from "../../utils/showToast";
@@ -35,12 +36,26 @@ function AdminOverview() {
   const estateId = user?.estate_id;
   const estateCode = user?.estate?.code || "";
   const [copied, setCopied] = useState(false);
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [dismissedPrompt, setDismissedPrompt] = useState(false);
+
+  const { data: estateSettings } = useQuery({
+    queryKey: ["estateSettings", estateId],
+    queryFn: () => getEstateSettings(estateId),
+    enabled: !!estateId,
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["adminOverview", estateId],
     queryFn: () => getEstateOverview(estateId),
     enabled: !!estateId,
   });
+
+  const needsPayoutSetup =
+    estateSettings && estateSettings.payout_account_status !== "connected";
+
+  const showFirstTimeModal =
+    needsPayoutSetup && !dismissedPrompt && !isPayoutModalOpen;
 
   async function handleCopyCode() {
     if (!estateCode) return;
@@ -98,9 +113,29 @@ function AdminOverview() {
         )}
       </div>
 
-      {/* 4 Metric Cards */}
+      {needsPayoutSetup && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-sm border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="size-5 shrink-0 text-amber-700 mt-0.5" />
+            <div>
+              <p className="font-semibold text-sm text-amber-950">
+                Connect your estate payout account
+              </p>
+              <p className="text-amber-800 mt-0.5">
+                Residents cannot pay online until a settlement bank account is connected. Payouts settle directly to your designated bank account every morning.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsPayoutModalOpen(true)}
+            className="inline-flex items-center justify-center shrink-0 px-3.5 py-2 rounded-sm bg-brand-accent text-white font-medium text-xs hover:bg-brand-accent/90 cursor-pointer self-start sm:self-auto">
+            Connect Account
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Residents */}
         <article className="flex flex-col justify-between border border-brand-accent/10 bg-white p-5 rounded-sm shadow-xs">
           <div className="flex items-start justify-between">
             <div className="flex h-11 w-11 items-center justify-center rounded-sm text-brand-primary bg-brand-primary/10">
@@ -126,7 +161,6 @@ function AdminOverview() {
           </div>
         </article>
 
-        {/* Collected */}
         <article className="flex flex-col justify-between border border-brand-accent/10 bg-white p-5 rounded-sm shadow-xs">
           <div className="flex items-start justify-between">
             <div className="flex h-11 w-11 items-center justify-center rounded-sm text-brand-secondary bg-brand-secondary/10">
@@ -152,7 +186,6 @@ function AdminOverview() {
           </div>
         </article>
 
-        {/* Payments Count */}
         <article className="flex flex-col justify-between border border-brand-accent/10 bg-white p-5 rounded-sm shadow-xs">
           <div className="flex items-start justify-between">
             <div className="flex h-11 w-11 items-center justify-center rounded-sm text-status-success bg-status-success/10">
@@ -173,7 +206,6 @@ function AdminOverview() {
           </div>
         </article>
 
-        {/* Outstanding */}
         <article className="flex flex-col justify-between border border-brand-accent/10 bg-white p-5 rounded-sm shadow-xs">
           <div className="flex items-start justify-between">
             <div className="flex h-11 w-11 items-center justify-center rounded-sm text-status-warning bg-status-warning/10">
@@ -195,7 +227,6 @@ function AdminOverview() {
         </article>
       </div>
 
-      {/* Recent Transactions Table */}
       <Table
         data={recentPayments}
         columns={RECENT_PAYMENT_COLUMNS}
@@ -279,6 +310,17 @@ function AdminOverview() {
             </div>
           </article>
         )}
+      />
+
+      <PayoutAccountModal
+        isOpen={isPayoutModalOpen || showFirstTimeModal}
+        onClose={() => {
+          setIsPayoutModalOpen(false);
+          setDismissedPrompt(true);
+        }}
+        estateId={estateId}
+        currentPayoutAccount={estateSettings}
+        isEditing={estateSettings?.payout_account_status === "connected"}
       />
     </div>
   );

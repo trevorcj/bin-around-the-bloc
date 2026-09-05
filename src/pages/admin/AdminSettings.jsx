@@ -10,6 +10,8 @@ import {
   Copy,
   Check,
   AlertCircle,
+  Landmark,
+  ShieldCheck,
 } from "lucide-react";
 import clsx from "clsx";
 import useAuth from "../../hooks/useAuth";
@@ -27,6 +29,7 @@ import { StyledH1 } from "../../styles/CommonStyles";
 import Button from "../../ui/Button";
 import InputUi from "../../ui/Input";
 import Modal from "../../ui/Modal";
+import PayoutAccountModal from "./PayoutAccountModal";
 import formatCurrency from "../../utils/formatCurrency";
 import showToast from "../../utils/showToast";
 
@@ -36,6 +39,7 @@ function AdminSettings() {
   const estateId = user?.estate_id;
 
   const [copied, setCopied] = useState(false);
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
 
   const [isAddStreetOpen, setIsAddStreetOpen] = useState(false);
   const [newStreetName, setNewStreetName] = useState("");
@@ -157,7 +161,6 @@ function AdminSettings() {
         </p>
       </div>
 
-      {/* 1. Estate Details & Code */}
       <section className="border border-brand-accent/10 rounded-sm bg-white p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-brand-accent/10 gap-4">
           <div className="flex items-center gap-3">
@@ -184,7 +187,6 @@ function AdminSettings() {
           ) : null}
         </div>
 
-        {/* Code Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-brand-accent/3 border border-brand-accent/10 rounded-sm gap-4">
           <div>
             <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-accent/50 block">
@@ -207,7 +209,6 @@ function AdminSettings() {
           </button>
         </div>
 
-        {/* Estate Fields */}
         {!isEditingEstate ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
             <div>
@@ -296,7 +297,6 @@ function AdminSettings() {
         )}
       </section>
 
-      {/* 2. Streets Configuration */}
       <section className="border border-brand-accent/10 rounded-sm bg-white p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-brand-accent/10 gap-3">
           <div className="flex items-center gap-3">
@@ -376,7 +376,6 @@ function AdminSettings() {
         )}
       </section>
 
-      {/* 3. Property Categories & Snapshot-Safe Fees */}
       <section className="border border-brand-accent/10 rounded-sm bg-white p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-brand-accent/10 gap-3">
           <div className="flex items-center gap-3">
@@ -466,7 +465,91 @@ function AdminSettings() {
         )}
       </section>
 
-      {/* Modal: Add Street */}
+      <section className="border border-brand-accent/10 rounded-sm bg-white p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-accent/10 pb-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-brand-primary/10 text-brand-primary">
+              <Landmark size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-brand-accent">Payout Account</h2>
+                {estate?.payout_account_status === "connected" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+                    <ShieldCheck size={12} /> Connected
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900">
+                    Not connected
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-brand-accent/65">
+                This is the bank account where payments collected from residents will be settled.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setIsPayoutModalOpen(true)}
+            variant="outline"
+            size="small">
+            {estate?.payout_account_status === "connected" ? "Change Account" : "Connect Account"}
+          </Button>
+        </div>
+
+        {estate?.payout_account_status === "connected" ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-brand-accent/40">
+                  Account Name
+                </p>
+                <p className="font-semibold text-brand-accent mt-1">
+                  {estate.payout_account_name || estate.name}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-brand-accent/40">
+                  Settlement Bank
+                </p>
+                <p className="font-semibold text-brand-accent mt-1">
+                  {estate.payout_bank_name || "Bank"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-brand-accent/40">
+                  Account Number
+                </p>
+                <p className="font-semibold text-brand-accent mt-1 font-mono">
+                  {estate.payout_account_number
+                    ? `••••••${estate.payout_account_number.slice(-4)}`
+                    : "••••••••••"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-sm border border-brand-accent/10 bg-brand-accent/[0.02] p-3 text-xs text-brand-accent/75">
+              Payouts are automatically settled into the estate&apos;s bank account every morning (next business day T+1) by Paystack.
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-sm border border-dashed border-brand-accent/20 p-6 text-center">
+            <p className="text-sm font-medium text-brand-accent">
+              No payout account connected yet
+            </p>
+            <p className="mt-1 text-xs text-brand-accent/60 max-w-md mx-auto">
+              Connect your estate bank account to start receiving automated settlements from resident waste-collection payments directly.
+            </p>
+            <div className="mt-4">
+              <Button size="small" onClick={() => setIsPayoutModalOpen(true)}>
+                Connect Payout Account
+              </Button>
+            </div>
+          </div>
+        )}
+      </section>
+
       <Modal
         isOpen={isAddStreetOpen}
         onClose={() => setIsAddStreetOpen(false)}
@@ -503,7 +586,6 @@ function AdminSettings() {
         </form>
       </Modal>
 
-      {/* Modal: Edit Street */}
       {editingStreet && (
         <Modal
           isOpen={!!editingStreet}
@@ -546,7 +628,6 @@ function AdminSettings() {
         </Modal>
       )}
 
-      {/* Modal: Add Property Category */}
       <Modal
         isOpen={isAddPropertyTypeOpen}
         onClose={() => setIsAddPropertyTypeOpen(false)}
@@ -599,7 +680,6 @@ function AdminSettings() {
         </form>
       </Modal>
 
-      {/* Modal: Edit Property Category Fee */}
       {editingPropertyType && (
         <Modal
           isOpen={!!editingPropertyType}
@@ -664,6 +744,14 @@ function AdminSettings() {
           </form>
         </Modal>
       )}
+
+      <PayoutAccountModal
+        isOpen={isPayoutModalOpen}
+        onClose={() => setIsPayoutModalOpen(false)}
+        estateId={estateId}
+        currentPayoutAccount={estate}
+        isEditing={estate?.payout_account_status === "connected"}
+      />
     </div>
   );
 }

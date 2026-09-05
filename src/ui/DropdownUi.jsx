@@ -52,7 +52,7 @@ function DropdownUi({
               modal={false}
               transition
               className={clsx(
-                "z-50 max-h-60 overflow-y-auto w-(--button-width) min-w-[12rem] rounded-sm border border-brand-accent/10 bg-white p-1 shadow-[0_24px_60px_-36px_rgba(10,37,37,0.45)] [--anchor-gap:4px] focus:outline-none",
+                "z-[9999] max-h-60 overflow-y-auto w-(--button-width) min-w-[12rem] rounded-sm border border-brand-accent/10 bg-white p-1 shadow-[0_24px_60px_-36px_rgba(10,37,37,0.45)] [--anchor-gap:4px] focus:outline-none",
                 "transition duration-100 ease-in data-leave:data-closed:opacity-0",
                 optionsClassName,
               )}>

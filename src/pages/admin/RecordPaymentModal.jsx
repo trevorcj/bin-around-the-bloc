@@ -56,10 +56,15 @@ function RecordPaymentModal({ isOpen, onClose, estateId }) {
 
   const residentOptions = [
     { label: "-- Select Resident --", value: "" },
-    ...residents.map((r) => ({
-      label: `${r.fullname} (${r.housenumber ? `House ${r.housenumber}, ` : ""}${r.streetname || ""})`,
-      value: r.id,
-    })),
+    ...residents.map((r) => {
+      const addr = [r.housenumber ? `House ${r.housenumber}` : "", r.streetname]
+        .filter(Boolean)
+        .join(", ");
+      return {
+        label: addr ? `${r.fullname} (${addr})` : r.fullname,
+        value: r.id,
+      };
+    }),
   ];
 
   const mutation = useMutation({
@@ -122,8 +127,12 @@ function RecordPaymentModal({ isOpen, onClose, estateId }) {
             onChange={(val) => {
               setSelectedResidentId(val);
               const res = residents.find((r) => r.id === val);
-              if (res && res.totalOutstanding > 0 && !amount) {
-                setAmount(String(res.totalOutstanding));
+              if (res) {
+                if (res.totalOutstanding > 0 && !amount) {
+                  setAmount(String(res.totalOutstanding));
+                } else if (!amount && res.property_fee) {
+                  setAmount(String(res.property_fee));
+                }
               }
             }}
           />

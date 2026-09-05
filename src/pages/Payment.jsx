@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LockKeyhole, CheckCircle2, ArrowUpRight, Building2, UserCheck, MapPin, Tag } from "lucide-react";
+import { LockKeyhole, CheckCircle2, ArrowUpRight, Building2, UserCheck, MapPin, Tag, AlertTriangle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import DropdownUi from "../ui/DropdownUi";
 import { StyledH1 } from "../styles/CommonStyles";
@@ -59,6 +59,34 @@ function Payment() {
   const [paidReceiptId, setPaidReceiptId] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [estatePayout, setEstatePayout] = useState(null);
+  const [isLoadingPayout, setIsLoadingPayout] = useState(true);
+
+  useEffect(() => {
+    async function loadEstatePayout() {
+      if (!user?.estate_id) {
+        setIsLoadingPayout(false);
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from("estates")
+          .select("id, name, paystack_subaccount_code, payout_account_status")
+          .eq("id", user.estate_id)
+          .maybeSingle();
+
+        if (data) {
+          setEstatePayout(data);
+        }
+      } catch (err) {
+        console.warn("Could not load estate payout status:", err);
+      } finally {
+        setIsLoadingPayout(false);
+      }
+    }
+
+    loadEstatePayout();
+  }, [user?.estate_id]);
 
   useEffect(() => {
     async function loadPeriodBilling() {
@@ -151,6 +179,7 @@ function Payment() {
   });
 
   const amountKobo = Math.round(Number(effectiveAmount) * 100);
+  const hasPayoutAccount = Boolean(estatePayout?.paystack_subaccount_code);
 
   async function handleSuccess(reference) {
     setIsSubmitting(true);
@@ -233,6 +262,14 @@ function Payment() {
   }
 
   function handleInitiatePayment() {
+    if (!hasPayoutAccount) {
+      showToast(
+        "error",
+        "Online payments are currently unavailable for this estate. Please contact your estate administrator."
+      );
+      return;
+    }
+
     if (isPaid) {
       showToast("info", "This billing period is already paid.");
       return;
@@ -261,6 +298,7 @@ function Payment() {
         "no-reply@example.com",
       amount: amountKobo,
       publicKey: PAYSTACK_PUBLIC_KEY,
+      subaccount: estatePayout.paystack_subaccount_code,
       metadata: {
         custom_fields: [
           {
@@ -429,6 +467,18 @@ function Payment() {
                 </span>
               </div>
             )}
+
+            {!isLoadingPayout && !hasPayoutAccount && (
+              <div className="flex items-start gap-3 rounded-sm border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900">
+                <AlertTriangle className="size-5 text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Online Payments Unavailable</p>
+                  <p className="mt-0.5 text-amber-800 leading-relaxed">
+                    Online payments are currently unavailable for this estate. Please contact your estate administrator.
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
         </div>
 
@@ -478,6 +528,14 @@ function Payment() {
                   className="w-full h-12 rounded-sm bg-stone-200 text-stone-500 font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2">
                   <CheckCircle2 size={16} /> Paid for this Period
                 </button>
+              ) : !isLoadingPayout && !hasPayoutAccount ? (
+                <Button
+                  type="button"
+                  disabled
+                  className="w-full h-12 inline-flex items-center justify-center gap-2 text-sm opacity-60 cursor-not-allowed">
+                  <LockKeyhole size={18} />
+                  Online Payments Unavailable
+                </Button>
               ) : PAYSTACK_PUBLIC_KEY ? (
                 <Button
                   type="button"
